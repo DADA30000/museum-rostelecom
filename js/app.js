@@ -433,7 +433,9 @@ class MuseumApp {
     const nameEl = document.getElementById("directorNameText");
     const titleEl = document.getElementById("directorTitleText");
 
-    if (quoteEl) quoteEl.textContent = `«${MUSEUM_INFO.director.quote}»`;
+    if (quoteEl) {
+      quoteEl.innerHTML = MUSEUM_INFO.director.quote.split("\n\n").map((p) => `<p style="margin-bottom: 12px; font-style: italic; line-height: 1.6;">${p}</p>`).join("");
+    }
     if (nameEl) nameEl.textContent = MUSEUM_INFO.director.name;
     if (titleEl) titleEl.textContent = MUSEUM_INFO.director.title;
   }
