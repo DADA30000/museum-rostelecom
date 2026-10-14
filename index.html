@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Цифровой Музей связи ПАО «Ростелеком» | Липецк</title>
+  <meta name="description" content="Виртуальный филиал Музея связи Липецкого филиала ПАО «Ростелеком». Интерактивный 360° тур, осмотр экспонатов, аудиогид, история связи от телеграфа до оптоволокна.">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Onest:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ (ПАНЕЛЬ УПРАВЛЕНИЯ ГОСТ Р 52872) -->
+  <aside id="a11yPanel" class="a11y-toolbar hidden" aria-label="Панель специальных возможностей">
+    <div class="container a11y-toolbar-inner">
+      <div class="a11y-group">
+        <span class="a11y-label">Размер шрифта:</span>
+        <button class="a11y-btn active" data-a11y-set-font="normal">A (100%)</button>
+        <button class="a11y-btn" data-a11y-set-font="large">A+ (125%)</button>
+        <button class="a11y-btn" data-a11y-set-font="xlarge">A++ (150%)</button>
+      </div>
+      <div class="a11y-group">
+        <span class="a11y-label">Цветовая схема:</span>
+        <button class="a11y-btn active" data-a11y-set-theme="black-yellow">Чёрно-жёлтая</button>
+        <button class="a11y-btn" data-a11y-set-theme="white-black">Бело-чёрная</button>
+        <button class="a11y-btn" data-a11y-set-theme="high-contrast-dark">Контрастная тёмная</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ШАПКА САЙТА -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-container">
+      <a href="#hero" class="brand-logo" aria-label="Ростелеком Музей связи">
+        <div class="logo-mark">
+          <!-- Фирменный знак Ростелекома -->
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none">
+            <path d="M14 6C14 18 24 24 34 24" stroke="#FF5E00" stroke-width="5" stroke-linecap="round"/>
+            <path d="M6 16C6 28 16 34 26 34" stroke="#772CE8" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">РОСТЕЛЕКОМ</span>
+          <span class="brand-sub">Музей связи • Липецк</span>
+        </div>
+      </a>
+
+      <!-- Основная навигация для десктопа -->
+      <nav class="desktop-nav" aria-label="Основное меню">
+        <a href="#tour" class="nav-link">Виртуальный тур</a>
+        <a href="#catalog" class="nav-link">Экспонаты</a>
+        <a href="#timeline" class="nav-link">Хронология</a>
+        <a href="#building" class="nav-link">Здание рекордов</a>
+        <a href="#state2026" class="nav-link">Связь 2026</a>
+        <a href="#booking" class="nav-link">Запись</a>
+      </nav>
+
+      <!-- Действия шапки -->
+      <div class="header-actions">
+        <!-- Кнопка ОВЗ / Слабовидящие -->
+        <button id="a11yToggleBtn" class="a11y-toggle-btn" title="Версия для слабовидящих" aria-label="Версия для слабовидящих">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/>
+          </svg>
+          <span class="btn-text">Доступность</span>
+        </button>
+
+        <!-- Мобильная кнопка меню (гамбургер) -->
+        <button id="mobileMenuToggle" class="mobile-burger-btn" aria-label="Открыть мобильное меню">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- МОБИЛЬНОЕ МЕНЮ (DRAWER) -->
+  <div id="mobileNavDrawer" class="mobile-nav-drawer" aria-hidden="true">
+    <div class="drawer-links">
+      <a href="#tour" class="drawer-link">🌐 Виртуальный 360° тур</a>
+      <a href="#catalog" class="drawer-link">🏛️ Каталог экспонатов (10+)</a>
+      <a href="#timeline" class="drawer-link">⏳ Хронология связи (1861–2026)</a>
+      <a href="#building" class="drawer-link">🏢 Здание на пл. Плеханова, 5</a>
+      <a href="#director" class="drawer-link">💬 Слово директора</a>
+      <a href="#state2026" class="drawer-link">🚀 Связь региона в 2026</a>
+      <a href="#booking" class="drawer-link">✍️ Запись на экскурсию</a>
+      <a href="#feedback" class="drawer-link">✉️ Отзывы и предложения</a>
+    </div>
+  </div>
+
+  <main>
+    <!-- HERO БЛОК С ПРИВЕТСТВИЕМ -->
+    <section class="hero-section" id="hero">
+      <div class="container hero-container">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Цифровой филиал Музея связи Липецкой области
+        </div>
+        <h1 class="hero-title">
+          История, изменившая скорость мира:<br>
+          <span class="gradient-text">от телеграфа Морзе до терабитной оптики</span>
+        </h1>
+        <p class="hero-description">
+          Добро пожаловать в корпоративный музей связи ПАО «Ростелеком» (пл. Плеханова, 5). 
+          Исследуйте редчайшие действующие экспонаты в интерактивном 360° осмотре, слушайте встроенный аудиогид и путешествуйте по ключевым эпохам телекоммуникаций Черноземья.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="#tour" class="btn btn-primary btn-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            Начать виртуальный тур
+          </a>
+          <a href="#catalog" class="btn btn-secondary btn-lg">
+            Коллекция экспонатов
+          </a>
+        </div>
+
+        <!-- Быстрые факты -->
+        <div class="hero-stats-row">
+          <div class="stat-item">
+            <div class="stat-number">1861 г.</div>
+            <div class="stat-desc">Первый телеграф в Липецком крае (г. Елец)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">1911 г.</div>
+            <div class="stat-desc">Первая телефонная станция Липецка на 60 номеров</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">360°</div>
+            <div class="stat-desc">Интерактивный круговой осмотр каждого экспоната</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">2026 г.</div>
+            <div class="stat-desc">ТОП-3 регионов РФ по уровню цифровизации</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ: ИНТЕРАКТИВНЫЙ ВИРТУАЛЬНЫЙ ТУР (ГЛАВНЫЙ ЭКРАН ПО ТЗ) -->
+    <section class="tour-section" id="tour">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Интерактивное пространство</div>
+          <h2 class="section-title">Виртуальный зал музея связи</h2>
+          <p class="section-subtitle">
+            Выберите удобный режим: панорама 360°, ракурсы от входа с интерактивными хотспотами или поэтажный план экспозиции. Нажимайте на пульсирующие маркеры витрин.
+          </p>
+        </div>
+
+        <!-- Контейнер виртуального тура -->
+        <div class="hall-tour-card" id="hallTourContainer">
+          <!-- Рендерится через js/panorama.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ: КАТАЛОГ ЭКСПОНАТОВ (ВСЕ 10+ ПО ТЗ) -->
+    <section class="catalog-section" id="catalog">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Экспозиция</div>
+          <h2 class="section-title">Ключевые экспонаты музея</h2>
+          <p class="section-subtitle">
+            Каждый экспонат оцифрован с возможностью кругового 360° осмотра свайпом/мышью, аудиогидом и историческими подробностями.
+          </p>
+        </div>
+
+        <!-- Фильтры категорий и поиск -->
+        <div class="catalog-controls">
+          <div class="category-tabs" role="tablist">
+            <button class="cat-tab-btn active" data-category="all">Все экспонаты (10)</button>
+            <button class="cat-tab-btn" data-category="telegraph">Телеграфия</button>
+            <button class="cat-tab-btn" data-category="telephone">Телефония</button>
+            <button class="cat-tab-btn" data-category="sound">Радио и звук</button>
+            <button class="cat-tab-btn" data-category="modern">Здание и оптика</button>
+            <button class="cat-tab-btn" data-category="digital">Цифровая эпоха</button>
+          </div>
+
+          <div class="catalog-search-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="catalogSearch" class="search-input" placeholder="Поиск по названию или эпохе...">
+          </div>
+        </div>
+
+        <!-- Сетка карточек -->
+        <div class="exhibits-grid" id="exhibitsGrid">
+          <!-- Заполняется динамически из js/app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ: ХРОНОЛОГИЯ СВЯЗИ (1832–2026) -->
+    <section class="timeline-section" id="timeline">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Летопись эпох</div>
+          <h2 class="section-title">Хронология развития связи в Липецком крае</h2>
+          <p class="section-subtitle">
+            От первых депеш царских времен и 60 абонентов градоначальника Клюева до оптических магистралей 2026 года.
+          </p>
+        </div>
+
+        <div class="timeline-wrapper" id="timelineList">
+          <!-- Рендерится через js/app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ: ЗДАНИЕ НА ПЛ. ПЛЕХАНОВА, 5 (КНИГА РЕКОРДОВ РОССИИ) -->
+    <section class="building-section" id="building">
+      <div class="container">
+        <div class="building-card-layout">
+          <div class="building-text-col">
+            <div class="section-tag">Архитектурная доминанта</div>
+            <h2 class="section-title">Здание «Ростелекома» на площади Плеханова, 5</h2>
+            <div class="record-badge">
+              🏆 Вошло в Книгу рекордов России: самое масштабное граффити на промышленном здании
+            </div>
+            <p class="building-p">
+              Построенное в 1980-х годах, здание является технологическим сердцем Липецка. За его монументальным фасадом с рекордным муралом круглосуточно работают ключевые телекоммуникационные службы национального масштаба.
+            </p>
+
+            <h3 class="services-title">Службы, располагающиеся в здании:</h3>
+            <div class="services-grid" id="buildingServicesGrid">
+              <!-- Рендерится через js/app.js -->
+            </div>
+          </div>
+
+          <div class="building-visual-col">
+            <div class="building-art-frame">
+              <!-- Стилизованное изображение здания с муралом -->
+              <svg viewBox="0 0 500 620" class="building-svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0E162B"/>
+                    <stop offset="100%" stop-color="#1A2744"/>
+                  </linearGradient>
+                  <linearGradient id="facadeGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#24345C"/>
+                    <stop offset="50%" stop-color="#1C294A"/>
+                    <stop offset="100%" stop-color="#141E38"/>
+                  </linearGradient>
+                  <linearGradient id="muralGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#FF5E00"/>
+                    <stop offset="50%" stop-color="#772CE8"/>
+                    <stop offset="100%" stop-color="#00C2FF"/>
+                  </linearGradient>
+                </defs>
+
+                <rect width="500" height="620" rx="16" fill="url(#skyGrad)"/>
+
+                <!-- Корпус здания Ростелеком -->
+                <polygon points="90,140 410,140 410,540 90,540" fill="url(#facadeGrad)" stroke="#3A4D7C" stroke-width="2"/>
+                
+                <!-- Рекордное граффити на стене -->
+                <path d="M110 160 Q 250 180 390 160 L 390 400 Q 250 440 110 400 Z" fill="url(#muralGrad)" opacity="0.85"/>
+                <circle cx="250" cy="280" r="60" fill="rgba(255,255,255,0.15)"/>
+                
+                <!-- Стилизованные оптические линии на мурале -->
+                <path d="M130 350 Q 250 200 370 320" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.8"/>
+                <path d="M140 240 Q 250 360 360 220" stroke="#00E5FF" stroke-width="3" fill="none" opacity="0.9"/>
+                <circle cx="250" cy="290" r="12" fill="#FFFFFF"/>
+
+                <!-- Окна фасада -->
+                <g fill="#00C2FF" opacity="0.4">
+                  <rect x="120" y="440" width="40" height="30" rx="2"/>
+                  <rect x="180" y="440" width="40" height="30" rx="2"/>
+                  <rect x="240" y="440" width="40" height="30" rx="2"/>
+                  <rect x="300" y="440" width="40" height="30" rx="2"/>
+
+                  <rect x="120" y="490" width="40" height="30" rx="2"/>
+                  <rect x="180" y="490" width="40" height="30" rx="2"/>
+                  <rect x="240" y="490" width="40" height="30" rx="2"/>
+                  <rect x="300" y="490" width="40" height="30" rx="2"/>
+                </g>
+
+                <!-- Входная группа -->
+                <rect x="220" y="520" width="60" height="20" fill="#00C2FF" opacity="0.8"/>
+                <text x="250" y="580" fill="#E2E8F0" font-size="14" font-weight="bold" text-anchor="middle" font-family="sans-serif">
+                  ПЛОЩАДЬ ПЛЕХАНОВА, 5
+                </text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ: СВЯЗЬ НА 2026 ГОД (ПО ТЗ) -->
+    <section class="state2026-section" id="state2026">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Будущее уже здесь</div>
+          <h2 class="section-title">Отрасль связи Липецкой области в 2026 году</h2>
+          <p class="section-subtitle">
+            Липецкая область входит в число всероссийских флагманов по проникновению интернета, плотности оптоволокна и надежности государственных сервисов.
+          </p>
+        </div>
+
+        <div class="stats-2026-grid">
+          <div class="stat-card-2026">
+            <div class="stat-val-2026">ТОП-3</div>
+            <div class="stat-lbl-2026">Среди регионов России по уровню доступности интернета</div>
+          </div>
+          <div class="stat-card-2026">
+            <div class="stat-val-2026">100%</div>
+            <div class="stat-lbl-2026">Оптическое покрытие социально значимых учреждений</div>
+          </div>
+          <div class="stat-card-2026">
+            <div class="stat-val-2026">&gt; 98%</div>
+            <div class="stat-lbl-2026">Охват жителей скоростным широкополосным доступом</div>
+          </div>
+          <div class="stat-card-2026">
+            <div class="stat-val-2026">10 Гбит/с</div>
+            <div class="stat-lbl-2026">Скорость каналов магистрального опорного кольца</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ: ПРИВЕТСТВЕННОЕ СЛОВО ДИРЕКТОРА (ПО ТЗ) -->
+    <section class="director-section" id="director">
+      <div class="container">
+        <div class="director-card">
+          <div class="director-avatar-col">
+            <div class="avatar-ring">
+              <!-- Иконка/портрет руководителя -->
+              <svg viewBox="0 0 120 120" width="120" height="120" fill="none">
+                <circle cx="60" cy="60" r="58" fill="#152140" stroke="#00C2FF" stroke-width="2"/>
+                <circle cx="60" cy="46" r="22" fill="#772CE8"/>
+                <path d="M26 102c0-18 16-28 34-28s34 10 34 28" fill="#FF5E00"/>
+              </svg>
+            </div>
+            <div class="director-badge">Приветствие</div>
+          </div>
+
+          <div class="director-content-col">
+            <blockquote class="director-quote" id="directorQuoteText">
+              <!-- Заполняется из js/data.js -->
+            </blockquote>
+            <div class="director-info">
+              <div class="director-name" id="directorNameText">Константин Викторович Власов</div>
+              <div class="director-title" id="directorTitleText">Директор Липецкого филиала ПАО «Ростелеком»</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ: ЗАПИСЬ НА ЭКСКУРСИЮ И ОТЗЫВЫ (ПО ТЗ) -->
+    <section class="booking-section" id="booking">
+      <div class="container">
+        <div class="forms-split-grid">
+          
+          <!-- Форма записи на экскурсию -->
+          <div class="form-card">
+            <div class="section-tag">Посещение</div>
+            <h3 class="form-card-title">Запись на экскурсию в музей</h3>
+            <p class="form-card-desc">
+              Музей является корпоративным. Очные экскурсии проводятся бесплатно по предварительному согласованию в рабочие дни (8:30 – 17:30).
+            </p>
+
+            <form id="tourBookingForm" class="modern-form">
+              <div class="form-field">
+                <label for="bookName">Ваше имя / Организация *</label>
+                <input type="text" id="bookName" required placeholder="Иван Иванов или Лицей №12">
+              </div>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="bookPhone">Телефон для связи *</label>
+                  <input type="tel" id="bookPhone" required placeholder="+7 (999) 000-00-00">
+                </div>
+                <div class="form-field">
+                  <label for="bookDate">Желаемая дата *</label>
+                  <input type="date" id="bookDate" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="bookCount">Количество гостей</label>
+                  <select id="bookCount">
+                    <option value="1-5">1 – 5 человек (индивидуально)</option>
+                    <option value="5-15" selected>5 – 15 человек (группа)</option>
+                    <option value="15+">Более 15 человек (класс/курс)</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="bookFormat">Формат визита</label>
+                  <select id="bookFormat">
+                    <option value="guided">С экскурсоводом</option>
+                    <option value="audio">Самостоятельный (с аудиогидом)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">
+                Записаться на экскурсию
+              </button>
+            </form>
+          </div>
+
+          <!-- Форма отзывов и предложений (с адресом referent_lp@center.rt.ru по ТЗ) -->
+          <div class="form-card" id="feedback">
+            <div class="section-tag">Обратная связь</div>
+            <h3 class="form-card-title">Отзывы и предложения</h3>
+            <p class="form-card-desc">
+              Ваши отзывы и идеи направляются напрямую в филиал на адрес <strong>referent_lp@center.rt.ru</strong>.
+            </p>
+
+            <form id="feedbackForm" class="modern-form">
+              <div class="form-field">
+                <label for="feedEmail">Ваш Email для ответа *</label>
+                <input type="email" id="feedEmail" required placeholder="name@example.com">
+              </div>
+
+              <div class="form-field">
+                <label for="feedSubject">Тема обращения</label>
+                <select id="feedSubject">
+                  <option value="review">Отзыв о посещении музея</option>
+                  <option value="donation">Предложение нового экспоната в дар музею</option>
+                  <option value="idea">Идея развития цифрового филиала</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="feedText">Текст сообщения *</label>
+                <textarea id="feedText" rows="4" required placeholder="Поделитесь вашими впечатлениями или предложениями..."></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-secondary btn-block">
+                Отправить отзыв на referent_lp@center.rt.ru
+              </button>
+            </form>
+
+            <div class="rules-box">
+              <h4 class="rules-title">Правила музея:</h4>
+              <ul class="rules-list" id="museumRulesList">
+                <!-- Заполняется из js/data.js -->
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ПОДВАЛ САЙТА С КОНТАКТАМИ -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div class="brand-text">
+            <span class="brand-name">РОСТЕЛЕКОМ</span>
+            <span class="brand-sub">Музей связи Липецкого филиала</span>
+          </div>
+        </div>
+        <p class="footer-desc">
+          Корпоративное научно-просветительское пространство. Сохраняем наследие инженерной мысли с 2002 года.
+        </p>
+        <p class="footer-copy">© 2026 Липецкий филиал ПАО «Ростелеком»</p>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Контакты музея</h4>
+        <ul class="footer-contacts">
+          <li>📍 Липецк, пл. Плеханова, 5</li>
+          <li>📞 8 (4742) 38-11-65 (будни 8:30 – 17:30)</li>
+          <li>✉️ Пресс-секретарь: <a href="mailto:polina.strelnikova@rt.ru">polina.strelnikova@rt.ru</a></li>
+          <li>✉️ Отзывы: <a href="mailto:referent_lp@center.rt.ru">referent_lp@center.rt.ru</a></li>
+          <li>🌐 ВК: <a href="https://vk.ru/nashpostrel" target="_blank" rel="noopener">vk.ru/nashpostrel</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Хакатон «Код времени»</h4>
+        <p class="footer-sub">
+          Проект разработан для отборочного этапа хакатона по оцифровке Музея связи.
+        </p>
+        <div class="badge-tech">
+          <span>HTML5 Canvas 360°</span>
+          <span>Web Speech A11y</span>
+          <span>Mobile Responsive</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- МОДАЛЬНОЕ ОКНО 360° ОСМОТРА ЭКСПОНАТА (НА МОБИЛКАХ - BOTTOM SHEET) -->
+  <div id="exhibitModal" class="modal-overlay" aria-hidden="true" role="dialog">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="modalCloseBtn" aria-label="Закрыть окно">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="modal-body-grid">
+        <!-- Левая колонка: 360 Canvas просмотрщик -->
+        <div class="modal-viewer-col">
+          <div class="viewer-canvas-wrap">
+            <canvas id="viewer360Canvas" class="viewer-360-canvas"></canvas>
+
+            <!-- Оверлей угла и подсказки -->
+            <div class="viewer-top-bar">
+              <span class="angle-badge" id="viewerAngleBadge">0°</span>
+              <span class="interaction-hint">↔ Потяните пальцем или мышью для вращения</span>
+            </div>
+
+            <!-- Кнопки управления просмотром -->
+            <div class="viewer-tools-bar">
+              <button class="viewer-tool-btn" id="viewerAutoRotateBtn" title="Автоматическое вращение">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                <span>Авто-вращение</span>
+              </button>
+              <button class="viewer-tool-btn" id="viewerZoomInBtn" title="Приблизить">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+              </button>
+              <button class="viewer-tool-btn" id="viewerZoomOutBtn" title="Отдалить">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+              </button>
+              <button class="viewer-tool-btn" id="viewerResetBtn" title="Сброс положения">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Правая колонка: описание, аудиогид, исторические факты -->
+        <div class="modal-info-col">
+          <div class="modal-meta-row">
+            <span class="exhibit-pill" id="modalExhibitNumber">Экспонат №01</span>
+            <span class="era-pill" id="modalExhibitEra">Конец XIX века</span>
+          </div>
+
+          <h2 class="modal-exhibit-title" id="modalExhibitTitle">Название экспоната</h2>
+
+          <!-- Плеер аудиогида -->
+          <div class="audio-guide-card">
+            <div class="audio-card-header">
+              <div class="audio-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00C2FF" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+              </div>
+              <div class="audio-meta">
+                <span class="audio-label">Аудиогид по экспонату</span>
+                <span class="audio-duration" id="modalAudioDuration">1:45</span>
+              </div>
+            </div>
+
+            <button class="audio-play-btn" id="modalAudioPlayBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Слушать аудиогид</span>
+            </button>
+          </div>
+
+          <div class="modal-desc-block">
+            <h4 class="block-heading">Историческая справка</h4>
+            <p id="modalExhibitFullDesc" class="full-desc-text"></p>
+          </div>
+
+          <div class="modal-facts-block">
+            <h4 class="block-heading">Интересные факты</h4>
+            <ul id="modalExhibitFacts" class="facts-list"></ul>
+          </div>
+
+          <div class="modal-actions-row">
+            <button class="btn btn-secondary btn-sm" id="modalQrBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Сгенерировать QR для витрины
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО ГЕНЕРАТОРА QR-КОДА ДЛЯ ВИТРИН МУЗЕЯ (ПО ТЗ) -->
+  <div id="qrModal" class="modal-overlay" aria-hidden="true" role="dialog">
+    <div class="modal-card qr-modal-card">
+      <button class="modal-close-btn" id="qrModalCloseBtn" aria-label="Закрыть окно">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="qr-modal-body">
+        <h3 id="qrModalTitle" class="qr-modal-heading">QR-код экспоната</h3>
+        <p id="qrModalSub" class="qr-modal-sub">Наклейка для очных посетителей музея</p>
+        
+        <div class="qr-code-display" id="qrCodeSvgBox"></div>
+
+        <p class="qr-instruction">
+          Посетители без экскурсовода могут навести камеру смартфона на эту наклейку у витрины, чтобы мгновенно открыть 360° осмотр и прослушать аудиогид.
+        </p>
+
+        <button class="btn btn-primary btn-block" onclick="window.print()">
+          Печать наклейки с QR-кодом
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- НИЖНЯЯ ПАНЕЛЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ (BOTTOM NAVIGATION BAR) -->
+  <nav class="mobile-bottom-bar" aria-label="Быстрая мобильная навигация">
+    <a href="#tour" class="bottom-bar-item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+      <span>Тур 360°</span>
+    </a>
+    <a href="#catalog" class="bottom-bar-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Экспонаты</span>
+    </a>
+    <a href="#timeline" class="bottom-bar-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>История</span>
+    </a>
+    <a href="#booking" class="bottom-bar-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Запись</span>
+    </a>
+  </nav>
+
+  <!-- TOAST УВЕДОМЛЕНИЕ -->
+  <div id="appToast" class="app-toast"></div>
+
+  <!-- СКРИПТ ПРИЛОЖЕНИЯ -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

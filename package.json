@@ -1,0 +1,18 @@
+{
+  "name": "museum-rostelecom",
+  "version": "1.0.0",
+  "description": "Цифровой филиал Музея связи ПАО «Ростелеком» в г. Липецк",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "start": "python3 -m http.server 3000"
+  },
+  "keywords": [
+    "museum",
+    "rostelecom",
+    "360-viewer",
+    "hackathon",
+    "virtual-tour"
+  ],
+  "author": "",
+  "license": "MIT"
+}
