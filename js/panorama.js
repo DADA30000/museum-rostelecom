@@ -292,12 +292,9 @@ export class HallViewController {
             const screenY = scrollY + scaledHeight * 0.62;
 
             ctx.beginPath();
-            ctx.arc(screenX, screenY, 16, 0, Math.PI * 2);
+            ctx.arc(screenX, screenY, 14, 0, Math.PI * 2);
             ctx.fillStyle = "#FF5E00";
-            ctx.shadowColor = "rgba(255, 94, 0, 0.8)";
-            ctx.shadowBlur = 10;
             ctx.fill();
-            ctx.shadowBlur = 0;
 
             ctx.fillStyle = "#FFFFFF";
             ctx.font = "bold 11px Inter, sans-serif";
