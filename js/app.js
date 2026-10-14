@@ -138,8 +138,8 @@ class MuseumApp {
           <div class="card-tag-badge">${ex.tag}</div>
           <img src="${ex.cover}" alt="${ex.name}" class="card-cover-img" loading="lazy">
           <div class="badge-360">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            360° интерактив
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16l-4-4m0 0l4-4m-4 4h18m-4 4l4-4m0 0l-4-4"/></svg>
+            Интерактивный ракурс
           </div>
         </div>
 
@@ -150,11 +150,8 @@ class MuseumApp {
         </div>
 
         <div class="card-footer">
-          <button class="btn btn-primary btn-sm open-exhibit-btn" data-id="${ex.id}">
-            360° Осмотр и детали
-          </button>
-          <button class="btn-icon qr-quick-btn" data-id="${ex.id}" title="Сгенерировать QR-код для витрины">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <button class="btn btn-primary btn-sm btn-block open-exhibit-btn" data-id="${ex.id}">
+            Осмотр ракурса и детали
           </button>
         </div>
       </article>
@@ -165,15 +162,6 @@ class MuseumApp {
         const id = parseInt(btn.closest(".exhibit-card").dataset.id, 10);
         const ex = this.exhibits.find((item) => item.id === id);
         if (ex) this.openExhibitModal(ex);
-      });
-    });
-
-    grid.querySelectorAll(".qr-quick-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const id = parseInt(btn.dataset.id, 10);
-        const ex = this.exhibits.find((item) => item.id === id);
-        if (ex) this.openQrModal(ex);
       });
     });
   }
@@ -206,12 +194,6 @@ class MuseumApp {
     const factsList = document.getElementById("modalExhibitFacts");
     factsList.innerHTML = exhibit.facts.map((f) => `<li>${f}</li>`).join("");
 
-    // QR код превью в модалке
-    const qrBtn = document.getElementById("modalQrBtn");
-    if (qrBtn) {
-      qrBtn.onclick = () => this.openQrModal(exhibit);
-    }
-
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
 
@@ -219,12 +201,7 @@ class MuseumApp {
     const canvas = document.getElementById("viewer360Canvas");
     if (canvas) {
       if (!this.viewer360) {
-        this.viewer360 = new Exhibit360Viewer(canvas, {
-          onFrameChange: (frame, angle) => {
-            const angleEl = document.getElementById("viewerAngleBadge");
-            if (angleEl) angleEl.textContent = `${angle}°`;
-          }
-        });
+        this.viewer360 = new Exhibit360Viewer(canvas);
       }
       requestAnimationFrame(() => {
         this.viewer360.initCanvasSize();
@@ -285,87 +262,6 @@ class MuseumApp {
         <span>Слушать аудиогид</span>
       `;
     }
-  }
-
-  // Модальное окно QR-кода экспоната для витрин
-  openQrModal(exhibit) {
-    const modal = document.getElementById("qrModal");
-    if (!modal) return;
-
-    document.getElementById("qrModalTitle").textContent = `QR-код: №${exhibit.number} ${exhibit.name}`;
-    document.getElementById("qrModalSub").textContent = `Для размещения на физической витрине музея (Липецк, пл. Плеханова, 5)`;
-
-    // Генерация стилизованного SVG QR-кода
-    const qrBox = document.getElementById("qrCodeSvgBox");
-    qrBox.innerHTML = this.generateSvgQrCode(`https://museum.rt.ru/exhibit/${exhibit.id}`);
-
-    modal.classList.add("active");
-  }
-
-  closeQrModal() {
-    const modal = document.getElementById("qrModal");
-    if (modal) modal.classList.remove("active");
-  }
-
-  // Векторная генерация QR-кода для витрин
-  generateSvgQrCode(dataText) {
-    return `
-      <svg viewBox="0 0 200 200" width="180" height="180" xmlns="http://www.w3.org/2000/svg">
-        <rect width="200" height="200" fill="#FFFFFF" rx="12"/>
-        <!-- Угловые позиционные метки -->
-        <rect x="20" y="20" width="45" height="45" fill="#0B1021" rx="4"/>
-        <rect x="27" y="27" width="31" height="31" fill="#FFFFFF" rx="2"/>
-        <rect x="34" y="34" width="17" height="17" fill="#772CE8" rx="2"/>
-
-        <rect x="135" y="20" width="45" height="45" fill="#0B1021" rx="4"/>
-        <rect x="142" y="27" width="31" height="31" fill="#FFFFFF" rx="2"/>
-        <rect x="149" y="34" width="17" height="17" fill="#772CE8" rx="2"/>
-
-        <rect x="20" y="135" width="45" height="45" fill="#0B1021" rx="4"/>
-        <rect x="27" y="142" width="31" height="31" fill="#FFFFFF" rx="2"/>
-        <rect x="34" y="149" width="17" height="17" fill="#772CE8" rx="2"/>
-
-        <!-- Паттерн данных -->
-        <g fill="#0B1021">
-          <rect x="75" y="25" width="10" height="10"/>
-          <rect x="95" y="25" width="10" height="10"/>
-          <rect x="115" y="25" width="10" height="10"/>
-          
-          <rect x="75" y="45" width="10" height="10"/>
-          <rect x="85" y="55" width="10" height="10"/>
-          <rect x="105" y="45" width="10" height="10"/>
-
-          <rect x="25" y="75" width="10" height="10"/>
-          <rect x="45" y="85" width="10" height="10"/>
-          <rect x="65" y="75" width="10" height="10"/>
-          <rect x="85" y="85" width="10" height="10"/>
-          <rect x="105" y="75" width="10" height="10"/>
-          <rect x="125" y="85" width="10" height="10"/>
-          <rect x="145" y="75" width="10" height="10"/>
-          <rect x="165" y="85" width="10" height="10"/>
-
-          <rect x="35" y="105" width="10" height="10"/>
-          <rect x="55" y="115" width="10" height="10"/>
-          <rect x="75" y="105" width="10" height="10"/>
-          <rect x="95" y="115" width="10" height="10"/>
-          <rect x="115" y="105" width="10" height="10"/>
-          <rect x="135" y="115" width="10" height="10"/>
-          <rect x="155" y="105" width="10" height="10"/>
-
-          <rect x="75" y="135" width="10" height="10"/>
-          <rect x="95" y="145" width="10" height="10"/>
-          <rect x="115" y="135" width="10" height="10"/>
-          <rect x="135" y="145" width="10" height="10"/>
-          <rect x="155" y="135" width="10" height="10"/>
-          <rect x="165" y="155" width="10" height="10"/>
-        </g>
-
-        <!-- Центральный логотип Ростелекома -->
-        <rect x="82" y="82" width="36" height="36" rx="8" fill="#FFFFFF" stroke="#00C2FF" stroke-width="2"/>
-        <path d="M93 90c0 5 4 10 10 10s7-4 7-9-3-9-9-9" fill="none" stroke="#FF5E00" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="106" cy="104" r="3" fill="#772CE8"/>
-      </svg>
-    `;
   }
 
   // Таймлайн истории связи (1832–2026)
@@ -449,9 +345,6 @@ class MuseumApp {
     const modalClose = document.getElementById("modalCloseBtn");
     if (modalClose) modalClose.addEventListener("click", () => this.closeExhibitModal());
 
-    const qrClose = document.getElementById("qrModalCloseBtn");
-    if (qrClose) qrClose.addEventListener("click", () => this.closeQrModal());
-
     // Управление 360 просмотрщиком
     const rotateToggle = document.getElementById("viewerAutoRotateBtn");
     if (rotateToggle) {
@@ -500,7 +393,6 @@ class MuseumApp {
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         this.closeExhibitModal();
-        this.closeQrModal();
       }
     });
   }

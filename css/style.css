@@ -1815,7 +1815,8 @@ section {
   display: flex;
   flex-direction: column;
   position: relative;
-  min-height: 380px;
+  min-height: 480px;
+  height: 100%;
   border-right: 1px solid var(--border-subtle);
 }
 
@@ -1823,14 +1824,17 @@ section {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 380px;
+  min-height: 480px;
+  flex: 1;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .viewer-360-canvas {
   width: 100%;
-  height: 380px;
+  height: 100%;
+  min-height: 480px;
   display: block;
   cursor: grab;
   touch-action: none;
@@ -1843,22 +1847,14 @@ section {
 .viewer-top-bar {
   position: absolute;
   top: 16px;
-  left: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 10px;
   pointer-events: none;
-}
-
-.angle-badge {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.85rem;
-  background: rgba(0, 194, 255, 0.2);
-  border: 1px solid var(--rt-cyan);
-  color: var(--rt-cyan);
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
+  width: 90%;
+  justify-content: center;
 }
 
 .interaction-hint {
@@ -2036,45 +2032,6 @@ section {
 
 .modal-actions-row {
   margin-top: 10px;
-}
-
-/* ==========================================================================
-   QR МОДАЛКА
-   ========================================================================== */
-.qr-modal-card {
-  max-width: 440px;
-  text-align: center;
-}
-
-.qr-modal-body {
-  padding: 40px 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.qr-modal-heading {
-  font-size: 1.3rem;
-}
-
-.qr-modal-sub {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.qr-code-display {
-  padding: 16px;
-  background: #FFFFFF;
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  margin: 10px 0;
-}
-
-.qr-instruction {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  line-height: 1.4;
 }
 
 /* ==========================================================================
