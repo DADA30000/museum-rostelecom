@@ -535,11 +535,19 @@
           <div class="audio-guide-card">
             <div class="audio-card-header">
               <div class="audio-icon-wrap">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00C2FF" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
               </div>
               <div class="audio-meta">
                 <span class="audio-label">Аудиогид по экспонату</span>
-                <span class="audio-duration" id="modalAudioDuration">1:45</span>
+                <span class="audio-duration" id="modalAudioDuration">--:--</span>
+              </div>
+            </div>
+
+            <div class="audio-track-wrap">
+              <input type="range" id="modalAudioSeek" class="audio-seek-slider" min="0" max="100" value="0" aria-label="Перемотка аудиогида">
+              <div class="audio-time-row">
+                <span id="modalAudioCurrentTime">0:00</span>
+                <span id="modalAudioTotalTime">--:--</span>
               </div>
             </div>
 

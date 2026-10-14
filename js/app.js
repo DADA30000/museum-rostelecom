@@ -199,7 +199,6 @@ class MuseumApp {
     document.getElementById("modalExhibitEra").textContent = exhibit.era;
     document.getElementById("modalExhibitTitle").textContent = exhibit.name;
     document.getElementById("modalExhibitFullDesc").textContent = exhibit.fullDesc;
-    document.getElementById("modalAudioDuration").textContent = exhibit.audioDuration;
 
     // Факты
     const factsList = document.getElementById("modalExhibitFacts");
@@ -278,9 +277,13 @@ class MuseumApp {
     this.stopAudio();
   }
 
-  // Персональный аудиогид для каждого экспоната (реальный mp3)
+  // Персональный аудиогид для каждого экспоната (реальный mp3 без хардкода)
   setupAudioGuide(exhibit) {
     const playBtn = document.getElementById("modalAudioPlayBtn");
+    const durationBadge = document.getElementById("modalAudioDuration");
+    const totalTimeEl = document.getElementById("modalAudioTotalTime");
+    const currentTimeEl = document.getElementById("modalAudioCurrentTime");
+    const seekSlider = document.getElementById("modalAudioSeek");
     if (!playBtn) return;
 
     if (this.currentAudio) {
@@ -288,11 +291,62 @@ class MuseumApp {
       this.currentAudio = null;
     }
 
-    this.currentAudio = new Audio(exhibit.audioFile);
-    this.currentAudio.onended = () => {
-      this.isPlayingAudio = false;
-      this.updateAudioBtnState();
+    // Сброс визуальных элементов до загрузки метаданных
+    if (currentTimeEl) currentTimeEl.textContent = "0:00";
+    if (totalTimeEl) totalTimeEl.textContent = "--:--";
+    if (durationBadge) durationBadge.textContent = "--:--";
+    if (seekSlider) seekSlider.value = 0;
+
+    const formatTime = (seconds) => {
+      if (isNaN(seconds) || !isFinite(seconds) || seconds <= 0) return "--:--";
+      const total = Math.floor(seconds);
+      const m = Math.floor(total / 60);
+      const s = String(total % 60).padStart(2, "0");
+      return `${m}:${s}`;
     };
+
+    this.currentAudio = new Audio(exhibit.audioFile);
+    this.currentAudio.preload = "metadata";
+
+    // Нативное определение длительности без хардкода
+    const onMeta = () => {
+      const durStr = formatTime(this.currentAudio.duration);
+      if (totalTimeEl) totalTimeEl.textContent = durStr;
+      if (durationBadge) durationBadge.textContent = durStr;
+    };
+
+    if (this.currentAudio.readyState >= 1) {
+      onMeta();
+    } else {
+      this.currentAudio.addEventListener("loadedmetadata", onMeta);
+    }
+
+    // Обновление тайминга при воспроизведении
+    this.currentAudio.addEventListener("timeupdate", () => {
+      if (!this.currentAudio) return;
+      if (currentTimeEl) {
+        currentTimeEl.textContent = formatTime(this.currentAudio.currentTime);
+      }
+      if (seekSlider && this.currentAudio.duration) {
+        seekSlider.value = (this.currentAudio.currentTime / this.currentAudio.duration) * 100;
+      }
+    });
+
+    // Перемотка ползунком
+    if (seekSlider) {
+      seekSlider.oninput = () => {
+        if (this.currentAudio && this.currentAudio.duration) {
+          this.currentAudio.currentTime = (seekSlider.value / 100) * this.currentAudio.duration;
+        }
+      };
+    }
+
+    this.currentAudio.addEventListener("ended", () => {
+      this.isPlayingAudio = false;
+      if (seekSlider) seekSlider.value = 0;
+      if (currentTimeEl) currentTimeEl.textContent = "0:00";
+      this.updateAudioBtnState();
+    });
 
     playBtn.onclick = () => {
       if (this.isPlayingAudio) {
