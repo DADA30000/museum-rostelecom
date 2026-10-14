@@ -227,58 +227,10 @@
 
           <div class="building-visual-col">
             <div class="building-art-frame">
-              <!-- Стилизованное изображение здания с муралом -->
-              <svg viewBox="0 0 500 620" class="building-svg" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                  <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#0E162B"/>
-                    <stop offset="100%" stop-color="#1A2744"/>
-                  </linearGradient>
-                  <linearGradient id="facadeGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#24345C"/>
-                    <stop offset="50%" stop-color="#1C294A"/>
-                    <stop offset="100%" stop-color="#141E38"/>
-                  </linearGradient>
-                  <linearGradient id="muralGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#FF5E00"/>
-                    <stop offset="50%" stop-color="#772CE8"/>
-                    <stop offset="100%" stop-color="#00C2FF"/>
-                  </linearGradient>
-                </defs>
-
-                <rect width="500" height="620" rx="16" fill="url(#skyGrad)"/>
-
-                <!-- Корпус здания Ростелеком -->
-                <polygon points="90,140 410,140 410,540 90,540" fill="url(#facadeGrad)" stroke="#3A4D7C" stroke-width="2"/>
-                
-                <!-- Рекордное граффити на стене -->
-                <path d="M110 160 Q 250 180 390 160 L 390 400 Q 250 440 110 400 Z" fill="url(#muralGrad)" opacity="0.85"/>
-                <circle cx="250" cy="280" r="60" fill="rgba(255,255,255,0.15)"/>
-                
-                <!-- Стилизованные оптические линии на мурале -->
-                <path d="M130 350 Q 250 200 370 320" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.8"/>
-                <path d="M140 240 Q 250 360 360 220" stroke="#00E5FF" stroke-width="3" fill="none" opacity="0.9"/>
-                <circle cx="250" cy="290" r="12" fill="#FFFFFF"/>
-
-                <!-- Окна фасада -->
-                <g fill="#00C2FF" opacity="0.4">
-                  <rect x="120" y="440" width="40" height="30" rx="2"/>
-                  <rect x="180" y="440" width="40" height="30" rx="2"/>
-                  <rect x="240" y="440" width="40" height="30" rx="2"/>
-                  <rect x="300" y="440" width="40" height="30" rx="2"/>
-
-                  <rect x="120" y="490" width="40" height="30" rx="2"/>
-                  <rect x="180" y="490" width="40" height="30" rx="2"/>
-                  <rect x="240" y="490" width="40" height="30" rx="2"/>
-                  <rect x="300" y="490" width="40" height="30" rx="2"/>
-                </g>
-
-                <!-- Входная группа -->
-                <rect x="220" y="520" width="60" height="20" fill="#00C2FF" opacity="0.8"/>
-                <text x="250" y="580" fill="#E2E8F0" font-size="14" font-weight="bold" text-anchor="middle" font-family="sans-serif">
-                  ПЛОЩАДЬ ПЛЕХАНОВА, 5
-                </text>
-              </svg>
+              <img src="assets/img/building_real.webp" alt="Здание Ростелекома на пл. Плеханова, 5 с рекордным муралом" class="building-real-img" loading="lazy">
+              <div class="building-caption">
+                г. Липецк, пл. Плеханова, 5 • Фасад с рекордным муралом
+              </div>
             </div>
           </div>
         </div>
