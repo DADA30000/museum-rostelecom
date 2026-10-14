@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Цифровой филиал Музея связи ПАО «Ростелеком» в г. Липецк",
   "scripts": {
-    "dev": "python3 -m http.server 3000",
-    "start": "python3 -m http.server 3000"
+    "dev": "python3 -m http.server 8900 --bind 0.0.0.0",
+    "start": "python3 -m http.server 8900 --bind 0.0.0.0"
   },
   "keywords": [
     "museum",
