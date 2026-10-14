@@ -497,20 +497,18 @@
       <div class="modal-body-grid">
         <!-- Левая колонка: 360 Canvas просмотрщик -->
         <div class="modal-viewer-col">
-          <div class="viewer-canvas-wrap">
+          <div class="viewer-canvas-wrap" id="viewerCanvasWrap">
             <canvas id="viewer360Canvas" class="viewer-360-canvas"></canvas>
+            <video id="modalExhibitVideo" class="modal-video-player hidden" controls playsinline></video>
+            <img id="modalExhibitStaticImg" class="modal-static-img hidden" alt="Фото экспоната">
 
             <!-- Оверлей подсказки -->
-            <div class="viewer-top-bar">
+            <div class="viewer-top-bar" id="viewerTopBar">
               <span class="interaction-hint">↔ Двигайте влево-вправо для осмотра ракурса со сторон</span>
             </div>
 
             <!-- Кнопки управления просмотром -->
-            <div class="viewer-tools-bar">
-              <button class="viewer-tool-btn" id="viewerAutoRotateBtn" title="Автоматический плавный обзор ракурса">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16l-4-4m0 0l4-4m-4 4h18m-4 4l4-4m0 0l-4-4"/></svg>
-                <span>Авто-обзор</span>
-              </button>
+            <div class="viewer-tools-bar" id="viewerToolsBar">
               <button class="viewer-tool-btn" id="viewerZoomInBtn" title="Приблизить">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
               </button>

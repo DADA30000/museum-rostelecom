@@ -1,12 +1,12 @@
 // Модуль виртуального зала на основе РЕАЛЬНЫХ материалов музея связи Липецка
-// 3 режима: 3 ракурса от входа с реальными фото, 360° панорама зала с 2D-навигацией и инерцией, интерактивная 2D-схема
+// 2 режима: 3 ракурса зала с реальными фото и Панорама музея с 2D-инерцией и векторными HTML-маркерами
 
 export class HallViewController {
   constructor(containerElement, exhibits, onSelectExhibit) {
     this.container = containerElement;
     this.exhibits = exhibits;
     this.onSelectExhibit = onSelectExhibit;
-    this.currentMode = "photos"; // 'photos' | 'panorama' | 'map'
+    this.currentMode = "photos"; // 'photos' | 'panorama'
     this.currentPhotoIndex = 0;
 
     // Реальные ракурсы музея связи (пл. Плеханова, 5)
@@ -65,7 +65,7 @@ export class HallViewController {
   render() {
     this.container.innerHTML = "";
 
-    // Шапка переключателей режимов зала
+    // Шапка переключателей режимов зала (только Ракурсы и Панорама)
     const header = document.createElement("div");
     header.className = "hall-modes-bar";
     header.innerHTML = `
@@ -78,13 +78,6 @@ export class HallViewController {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
           Панорама музея
         </button>
-        <button class="mode-btn ${this.currentMode === 'map' ? 'active' : ''}" data-mode="map">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-          Схема музея
-        </button>
-      </div>
-      <div class="hall-hint">
-        💡 Нажимайте на маркер экспоната для детального осмотра ракурса
       </div>
     `;
 
@@ -102,8 +95,6 @@ export class HallViewController {
       this.renderPhotosMode(viewport);
     } else if (this.currentMode === "panorama") {
       this.renderPanoramaMode(viewport);
-    } else if (this.currentMode === "map") {
-      this.renderMapMode(viewport);
     }
 
     this.container.appendChild(viewport);
@@ -179,7 +170,6 @@ export class HallViewController {
       spot.setAttribute("aria-label", `Экспонат ${ex.name}`);
 
       spot.innerHTML = `
-        <div class="hotspot-pulse"></div>
         <div class="hotspot-core">
           <span>№${ex.number}</span>
         </div>
@@ -187,7 +177,7 @@ export class HallViewController {
           <div class="card-tag">${ex.era}</div>
           <div class="card-name">${ex.name}</div>
           <div class="card-action">
-            <span>Осмотр ракурса</span>
+            <span>Осмотр экспоната</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
@@ -201,29 +191,24 @@ export class HallViewController {
     });
   }
 
-  // Режим панорамы зала: 2D-навигация (X + Y) с физическим импульсом и инерцией
+  // Режим панорамы зала: умеренный зум для чёткости + HTML-маркеры поверх полотна
   renderPanoramaMode(viewport) {
     viewport.innerHTML = `
       <div class="panorama-canvas-wrap">
         <canvas id="panoramaCanvas" class="panorama-canvas"></canvas>
+        <div class="hotspots-layer" id="panoHotspotsLayer"></div>
         <div class="pano-controls-overlay">
-          <div class="pano-hint">↔ ↕ Зажмите и перетаскивайте в любую сторону для осмотра зала</div>
-          <div class="pano-btns">
-            <button id="panoLeftBtn" class="control-icon-btn" title="Влево">◀</button>
-            <button id="panoRightBtn" class="control-icon-btn" title="Вправо">▶</button>
-            <button id="panoUpBtn" class="control-icon-btn" title="Вверх">▲</button>
-            <button id="panoDownBtn" class="control-icon-btn" title="Вниз">▼</button>
-            <button id="panoResetBtn" class="control-icon-btn" title="К центру">⊙</button>
-          </div>
+          <div class="pano-hint">↔ ↕ Зажмите и перетаскивайте для свободного обзора зала</div>
         </div>
       </div>
     `;
 
     const canvas = viewport.querySelector("#panoramaCanvas");
-    this.initPanoramaCanvas(canvas);
+    const hotspotsLayer = viewport.querySelector("#panoHotspotsLayer");
+    this.initPanoramaCanvas(canvas, hotspotsLayer);
   }
 
-  initPanoramaCanvas(canvas) {
+  initPanoramaCanvas(canvas, hotspotsLayer) {
     const ctx = canvas.getContext("2d");
     let scrollX = 0;
     let scrollY = 0;
@@ -234,6 +219,31 @@ export class HallViewController {
     let velocityY = 0;
     let lastTime = 0;
 
+    // Создаём HTML-элементы для экспонатов на панораме
+    const markerElements = this.exhibits.map((ex, i) => {
+      const spot = document.createElement("div");
+      spot.className = "exhibit-hotspot pano-dom-hotspot";
+      spot.innerHTML = `
+        <div class="hotspot-core">
+          <span>№${ex.number}</span>
+        </div>
+        <div class="hotspot-card">
+          <div class="card-tag">${ex.era}</div>
+          <div class="card-name">${ex.name}</div>
+          <div class="card-action">
+            <span>Осмотр экспоната</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+      `;
+      spot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.onSelectExhibit(ex);
+      });
+      hotspotsLayer.appendChild(spot);
+      return { el: spot, ex, index: i };
+    });
+
     const panoImg = new Image();
     panoImg.src = "assets/img/hall_panorama.webp";
 
@@ -241,7 +251,8 @@ export class HallViewController {
       const h = canvas.height;
       if (!panoImg.complete || !h) return;
       const ph = panoImg.naturalHeight;
-      const scale = (h * 1.35) / ph;
+      // Умеренный зум 1.08 для максимальной чёткости без растягивания
+      const scale = (h * 1.08) / ph;
       const scaledHeight = ph * scale;
       const minY = -(scaledHeight - h);
       const maxY = 0;
@@ -254,8 +265,8 @@ export class HallViewController {
       canvas.height = canvas.parentElement.clientHeight;
       if (panoImg.complete) {
         const ph = panoImg.naturalHeight;
-        const scale = (canvas.height * 1.35) / ph;
-        scrollY = -(ph * scale - canvas.height) / 2; // центрируем по вертикали
+        const scale = (canvas.height * 1.08) / ph;
+        scrollY = -(ph * scale - canvas.height) / 2;
       }
       draw();
     };
@@ -270,7 +281,7 @@ export class HallViewController {
       if (panoImg.complete && panoImg.naturalWidth > 0) {
         const pw = panoImg.naturalWidth;
         const ph = panoImg.naturalHeight;
-        const scale = (h * 1.35) / ph;
+        const scale = (h * 1.08) / ph;
         const scaledWidth = pw * scale;
         const scaledHeight = ph * scale;
 
@@ -281,40 +292,27 @@ export class HallViewController {
           x += scaledWidth;
         }
 
-        // Интерактивные маркеры экспонатов вдоль панорамы
-        this.exhibits.forEach((ex, i) => {
-          const itemNormalizedX = (i + 0.5) / this.exhibits.length;
+        // Обновляем позиции векторных HTML-маркеров
+        markerElements.forEach(({ el, index }) => {
+          const itemNormalizedX = (index + 0.5) / this.exhibits.length;
           const absoluteX = itemNormalizedX * scaledWidth;
           let screenX = (absoluteX - scrollX) % scaledWidth;
           if (screenX < 0) screenX += scaledWidth;
 
-          if (screenX >= 0 && screenX <= w) {
+          if (screenX >= -40 && screenX <= w + 40) {
             const screenY = scrollY + scaledHeight * 0.62;
-
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, 14, 0, Math.PI * 2);
-            ctx.fillStyle = "#FF5E00";
-            ctx.fill();
-
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "bold 11px Inter, sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(`№${ex.number}`, screenX, screenY + 4);
-
-            ctx.fillStyle = "rgba(10, 16, 33, 0.9)";
-            const textWidth = ctx.measureText(ex.name).width;
-            ctx.fillRect(screenX - textWidth / 2 - 8, screenY + 22, textWidth + 16, 22);
-
-            ctx.fillStyle = "#00C2FF";
-            ctx.font = "600 11px Inter, sans-serif";
-            ctx.fillText(ex.name, screenX, screenY + 37);
+            el.style.display = "block";
+            el.style.left = `${screenX}px`;
+            el.style.top = `${screenY}px`;
+          } else {
+            el.style.display = "none";
           }
         });
       } else {
-        ctx.fillStyle = "#080D1A";
+        ctx.fillStyle = "#0B101D";
         ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "#00C2FF";
-        ctx.font = "14px Inter, sans-serif";
+        ctx.fillStyle = "#94A3B8";
+        ctx.font = "500 14px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("Загрузка панорамы музея...", w / 2, h / 2);
       }
@@ -322,7 +320,7 @@ export class HallViewController {
 
     panoImg.onload = () => {
       const ph = panoImg.naturalHeight;
-      const scale = (canvas.height * 1.35) / ph;
+      const scale = (canvas.height * 1.08) / ph;
       scrollY = -(ph * scale - canvas.height) / 2;
       draw();
     };
@@ -381,88 +379,7 @@ export class HallViewController {
     };
     requestAnimationFrame(inertiaLoop);
 
-    // Клик по маркеру на панораме
-    canvas.addEventListener("click", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      const h = canvas.height;
-
-      if (!panoImg.complete) return;
-      const ph = panoImg.naturalHeight;
-      const scale = (h * 1.35) / ph;
-      const scaledWidth = panoImg.naturalWidth * scale;
-      const scaledHeight = ph * scale;
-
-      this.exhibits.forEach((ex, i) => {
-        const itemNormalizedX = (i + 0.5) / this.exhibits.length;
-        const absoluteX = itemNormalizedX * scaledWidth;
-        let screenX = (absoluteX - scrollX) % scaledWidth;
-        if (screenX < 0) screenX += scaledWidth;
-
-        const screenY = scrollY + scaledHeight * 0.62;
-        const dist = Math.hypot(clickX - screenX, clickY - screenY);
-        if (dist < 36) {
-          this.onSelectExhibit(ex);
-        }
-      });
-    });
-
     window.addEventListener("resize", resize);
     setTimeout(resize, 60);
-
-    const leftBtn = this.container.querySelector("#panoLeftBtn");
-    const rightBtn = this.container.querySelector("#panoRightBtn");
-    const upBtn = this.container.querySelector("#panoUpBtn");
-    const downBtn = this.container.querySelector("#panoDownBtn");
-    const resetBtn = this.container.querySelector("#panoResetBtn");
-
-    if (leftBtn) leftBtn.addEventListener("click", () => { velocityX = 0.8; });
-    if (rightBtn) rightBtn.addEventListener("click", () => { velocityX = -0.8; });
-    if (upBtn) upBtn.addEventListener("click", () => { velocityY = 0.6; });
-    if (downBtn) downBtn.addEventListener("click", () => { velocityY = -0.6; });
-    if (resetBtn) resetBtn.addEventListener("click", () => {
-      scrollX = 0;
-      velocityX = 0;
-      velocityY = 0;
-      const ph = panoImg.naturalHeight;
-      const scale = (canvas.height * 1.35) / ph;
-      scrollY = -(ph * scale - canvas.height) / 2;
-      draw();
-    });
-  }
-
-  // Режим интерактивной схемы зала музея
-  renderMapMode(viewport) {
-    viewport.innerHTML = `
-      <div class="museum-map-container">
-        <div class="map-blueprint">
-          <div class="map-legend-bar">
-            <span>🚪 Главный вход</span>
-            <span>➡️ Маршрут осмотра</span>
-            <span>🏛️ Музей связи (пл. Плеханова, 5)</span>
-          </div>
-
-          <div class="map-stands-grid">
-            ${this.exhibits.map(ex => `
-              <div class="stand-card" data-exhibit-id="${ex.id}">
-                <div class="stand-badge">Стенд №${ex.number}</div>
-                <div class="stand-category">${ex.era}</div>
-                <div class="stand-title">${ex.name}</div>
-                <div class="stand-link">Осмотр ракурса →</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    `;
-
-    viewport.querySelectorAll(".stand-card").forEach(card => {
-      card.addEventListener("click", () => {
-        const id = parseInt(card.dataset.exhibitId, 10);
-        const ex = this.exhibits.find(e => e.id === id);
-        if (ex) this.onSelectExhibit(ex);
-      });
-    });
   }
 }

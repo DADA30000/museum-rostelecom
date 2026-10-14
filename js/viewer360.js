@@ -106,9 +106,10 @@ export class Exhibit360Viewer {
       this.lastX = e.clientX;
       this.lastTime = now;
 
-      // Плавная чувствительность перемещения ракурса
+      // Плавная чувствительность перемещения ракурса с учётом направления свайпа
       const sensitivity = 8;
-      const frameDelta = deltaX / sensitivity;
+      const dir = (this.exhibitData && this.exhibitData.invertSwipe) ? -1 : 1;
+      const frameDelta = (deltaX / sensitivity) * dir;
       this.stepFrame(frameDelta);
     });
 
@@ -157,23 +158,15 @@ export class Exhibit360Viewer {
     this.currentFrame = Math.floor(this.totalFrames / 2);
     this.zoom = 1;
     this.velocityX = 0;
-    this.isAutoRotating = false;
     this.render();
   }
 
   startLoop() {
     const loop = () => {
-      if (this.isAutoRotating && !this.isDragging) {
-        // Плавное покачивание ракурса туда-обратно
-        if (this.currentFrame >= this.totalFrames - 1) {
-          this.autoDirection = -1;
-        } else if (this.currentFrame <= 0) {
-          this.autoDirection = 1;
-        }
-        this.stepFrame(this.autoRotateSpeed * this.autoDirection);
-      } else if (!this.isDragging && Math.abs(this.velocityX) > 0.02) {
+      if (!this.isDragging && Math.abs(this.velocityX) > 0.02) {
         // Затухание инерции скраббинга
-        this.stepFrame(this.velocityX * 2.5);
+        const dir = (this.exhibitData && this.exhibitData.invertSwipe) ? -1 : 1;
+        this.stepFrame(this.velocityX * 2.2 * dir);
         this.velocityX *= 0.88;
       }
       requestAnimationFrame(loop);
@@ -198,27 +191,20 @@ export class Exhibit360Viewer {
       const nh = img.naturalHeight;
 
       // Центрируем изображение строго по высоте и ширине канваса
-      const scale = Math.min((w * 0.94) / nw, (h * 0.94) / nh) * this.zoom;
+      const scale = Math.min((w * 0.95) / nw, (h * 0.95) / nh) * this.zoom;
       const dw = nw * scale;
       const dh = nh * scale;
       const dx = (w - dw) / 2;
       const dy = (h - dh) / 2;
 
       ctx.save();
-      // Мягкая подсветка витрины
-      const glow = ctx.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, Math.max(dw, dh) * 0.7);
-      glow.addColorStop(0, "rgba(0, 194, 255, 0.12)");
-      glow.addColorStop(1, "rgba(6, 11, 23, 0)");
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, w, h);
-
       ctx.drawImage(img, dx, dy, dw, dh);
       ctx.restore();
     } else {
       // Загрузка
       ctx.fillStyle = "#060B17";
       ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = "#00C2FF";
+      ctx.fillStyle = "#94A3B8";
       ctx.font = "500 14px Inter, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("Загрузка ракурса экспоната...", w / 2, h / 2);

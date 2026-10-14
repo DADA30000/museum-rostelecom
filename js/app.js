@@ -135,12 +135,23 @@ class MuseumApp {
       <article class="exhibit-card" data-id="${ex.id}">
         <div class="card-visual">
           <div class="card-num-badge">№${ex.number}</div>
-          <div class="card-tag-badge">${ex.tag}</div>
           <img src="${ex.cover}" alt="${ex.name}" class="card-cover-img" loading="lazy">
-          <div class="badge-360">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16l-4-4m0 0l4-4m-4 4h18m-4 4l4-4m0 0l-4-4"/></svg>
-            Интерактивный ракурс
-          </div>
+          ${ex.has360 ? `
+            <div class="badge-360">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16l-4-4m0 0l4-4m-4 4h18m-4 4l4-4m0 0l-4-4"/></svg>
+              Интерактивный ракурс
+            </div>
+          ` : (ex.video ? `
+            <div class="badge-360">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Видео работы
+            </div>
+          ` : `
+            <div class="badge-360">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Фото-осмотр
+            </div>
+          `)}
         </div>
 
         <div class="card-body">
@@ -197,19 +208,57 @@ class MuseumApp {
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
 
-    // Инициализация 360 Canvas Viewer после отображения модалки
+    // Управление видом: видео работы (АТС), интерактивные кадры или статичное фото (стол)
     const canvas = document.getElementById("viewer360Canvas");
-    if (canvas) {
-      if (!this.viewer360) {
-        this.viewer360 = new Exhibit360Viewer(canvas);
+    const videoEl = document.getElementById("modalExhibitVideo");
+    const staticImg = document.getElementById("modalExhibitStaticImg");
+    const topBar = document.getElementById("viewerTopBar");
+    const toolsBar = document.getElementById("viewerToolsBar");
+
+    if (exhibit.video) {
+      if (canvas) canvas.classList.add("hidden");
+      if (staticImg) staticImg.classList.add("hidden");
+      if (topBar) topBar.classList.add("hidden");
+      if (toolsBar) toolsBar.classList.add("hidden");
+      if (videoEl) {
+        videoEl.classList.remove("hidden");
+        videoEl.src = exhibit.video;
+        videoEl.play().catch(() => {});
       }
-      requestAnimationFrame(() => {
-        this.viewer360.initCanvasSize();
-        this.viewer360.setExhibit(exhibit);
-      });
+    } else if (exhibit.frames && exhibit.frames.length > 0) {
+      if (videoEl) {
+        videoEl.pause();
+        videoEl.classList.add("hidden");
+      }
+      if (staticImg) staticImg.classList.add("hidden");
+      if (topBar) topBar.classList.remove("hidden");
+      if (toolsBar) toolsBar.classList.remove("hidden");
+      if (canvas) {
+        canvas.classList.remove("hidden");
+        if (!this.viewer360) {
+          this.viewer360 = new Exhibit360Viewer(canvas);
+        }
+        requestAnimationFrame(() => {
+          this.viewer360.initCanvasSize();
+          this.viewer360.setExhibit(exhibit);
+        });
+      }
+    } else {
+      // Статичное фото высокого разрешения (например, стол телеграфиста)
+      if (videoEl) {
+        videoEl.pause();
+        videoEl.classList.add("hidden");
+      }
+      if (canvas) canvas.classList.add("hidden");
+      if (topBar) topBar.classList.add("hidden");
+      if (toolsBar) toolsBar.classList.add("hidden");
+      if (staticImg) {
+        staticImg.classList.remove("hidden");
+        staticImg.src = exhibit.cover;
+      }
     }
 
-    // Сброс аудиоплеера
+    // Сброс и настройка персонального аудиогида
     this.stopAudio();
     this.setupAudioGuide(exhibit);
   }
@@ -219,44 +268,66 @@ class MuseumApp {
     if (!modal) return;
     modal.classList.remove("active");
     document.body.style.overflow = "";
+
+    const videoEl = document.getElementById("modalExhibitVideo");
+    if (videoEl) {
+      videoEl.pause();
+      videoEl.currentTime = 0;
+    }
+
     this.stopAudio();
   }
 
-  // Аудиогид с синтезом речи или локальным файлом
+  // Персональный аудиогид для каждого экспоната (реальный mp3)
   setupAudioGuide(exhibit) {
     const playBtn = document.getElementById("modalAudioPlayBtn");
-    const audioProgress = document.getElementById("modalAudioProgress");
     if (!playBtn) return;
+
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio = null;
+    }
+
+    this.currentAudio = new Audio(exhibit.audioFile);
+    this.currentAudio.onended = () => {
+      this.isPlayingAudio = false;
+      this.updateAudioBtnState();
+    };
 
     playBtn.onclick = () => {
       if (this.isPlayingAudio) {
         this.stopAudio();
       } else {
-        this.playAudio(exhibit);
+        this.playAudio();
       }
     };
+    this.updateAudioBtnState();
   }
 
-  playAudio(exhibit) {
-    const playBtn = document.getElementById("modalAudioPlayBtn");
+  playAudio() {
+    if (!this.currentAudio) return;
     this.isPlayingAudio = true;
-    if (playBtn) {
-      playBtn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        <span>Приостановить</span>
-      `;
-    }
-
-    this.a11y.speakText(exhibit.audioText, () => {
-      this.stopAudio();
-    });
+    this.currentAudio.play().catch(() => {});
+    this.updateAudioBtnState();
   }
 
   stopAudio() {
     this.isPlayingAudio = false;
-    this.a11y.stopSpeaking();
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+    }
+    this.updateAudioBtnState();
+  }
+
+  updateAudioBtnState() {
     const playBtn = document.getElementById("modalAudioPlayBtn");
-    if (playBtn) {
+    if (!playBtn) return;
+    if (this.isPlayingAudio) {
+      playBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <span>Приостановить</span>
+      `;
+    } else {
       playBtn.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <span>Слушать аудиогид</span>

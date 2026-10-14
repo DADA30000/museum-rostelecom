@@ -708,41 +708,44 @@ section {
 
 .hotspot-core {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: var(--rt-orange);
+  background: rgba(255, 94, 0, 0.95);
   border: 2px solid #FFFFFF;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 0 5px rgba(11, 16, 29, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 800;
   color: #FFFFFF;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s;
 }
 
 .exhibit-hotspot:hover .hotspot-core {
-  transform: scale(1.1);
+  transform: scale(1.15);
   background: #E55200;
 }
 
 .hotspot-card {
   position: absolute;
-  bottom: 44px;
+  bottom: 50px;
   left: 50%;
   transform: translateX(-50%) translateY(6px);
-  width: 220px;
+  width: 230px;
   background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-sm);
-  padding: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  padding: 12px 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
   pointer-events: none;
   opacity: 0;
   transition: all 0.2s ease-out;
   text-align: left;
+  z-index: 25;
 }
 
 .exhibit-hotspot:hover .hotspot-card {
@@ -751,22 +754,22 @@ section {
 }
 
 .card-tag {
-  font-size: 0.7rem;
-  color: var(--rt-cyan);
+  font-size: 0.72rem;
+  color: #94A3B8;
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .card-name {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #FFFFFF;
   margin-bottom: 6px;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .card-action {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--rt-orange);
   font-weight: 600;
   display: flex;
@@ -782,46 +785,55 @@ section {
   transform: translateX(-50%);
   display: flex;
   gap: 10px;
-  background: rgba(10, 16, 33, 0.85);
-  backdrop-filter: blur(12px);
-  padding: 6px 12px;
+  background: rgba(10, 16, 33, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 8px 14px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   max-width: 90%;
   overflow-x: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
 .scene-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 0.82rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.08);
+  color: #E2E8F0;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: var(--transition);
 }
 
+.scene-chip:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+}
+
 .scene-chip .chip-num {
-  font-size: 0.75rem;
-  padding: 2px 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 7px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
 }
 
 .scene-chip.active {
-  background: var(--rt-cyan);
-  color: #0B1021;
+  background: var(--rt-orange);
+  color: #FFFFFF !important;
+  border-color: #FFA366;
 }
 
 .scene-chip.active .chip-num {
-  background: #0B1021;
+  background: rgba(0, 0, 0, 0.35);
   color: #FFFFFF;
 }
 
@@ -1817,8 +1829,33 @@ section {
   touch-action: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .viewer-360-canvas:active {
   cursor: grabbing;
+}
+
+.modal-video-player {
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  max-height: 75vh;
+  object-fit: contain;
+  background: #000000;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+.modal-static-img {
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  max-height: 75vh;
+  object-fit: contain;
+  background: #060B17;
+  display: block;
 }
 
 .viewer-top-bar {
