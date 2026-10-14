@@ -29,6 +29,55 @@ class MuseumApp {
     this.bindGlobalEvents();
     this.bindA11yEvents();
     this.bindForms();
+    this.initScrollSpy();
+  }
+
+  initScrollSpy() {
+    const sections = [
+      { id: "tour", selector: 'a[href="#tour"]' },
+      { id: "catalog", selector: 'a[href="#catalog"]' },
+      { id: "timeline", selector: 'a[href="#timeline"]' },
+      { id: "booking", selector: 'a[href="#booking"]' }
+    ];
+
+    const bottomItems = document.querySelectorAll(".bottom-bar-item");
+    const desktopLinks = document.querySelectorAll(".desktop-nav .nav-link");
+
+    const setActive = (targetId) => {
+      bottomItems.forEach((item) => {
+        const href = item.getAttribute("href");
+        item.classList.toggle("active", href === `#${targetId}`);
+      });
+      desktopLinks.forEach((link) => {
+        const href = link.getAttribute("href");
+        link.classList.toggle("active", href === `#${targetId}`);
+      });
+    };
+
+    // Слушатель скролла
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActive(entry.target.id);
+        }
+      });
+    }, {
+      rootMargin: "-20% 0px -60% 0px",
+      threshold: 0
+    });
+
+    sections.forEach((sec) => {
+      const el = document.getElementById(sec.id);
+      if (el) observer.observe(el);
+    });
+
+    // При клике на элемент бара
+    bottomItems.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("href").replace("#", "");
+        setActive(targetId);
+      });
+    });
   }
 
   renderHeaderInfo() {
@@ -87,15 +136,10 @@ class MuseumApp {
         <div class="card-visual">
           <div class="card-num-badge">№${ex.number}</div>
           <div class="card-tag-badge">${ex.tag}</div>
-          <div class="card-canvas-preview" id="preview-${ex.id}">
-            <!-- 360 превью индикатор -->
-            <div class="badge-360">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              360° интерактив
-            </div>
-            <div class="preview-apparatus-icon">
-              ${this.getCategoryIcon(ex.category)}
-            </div>
+          <img src="${ex.cover}" alt="${ex.name}" class="card-cover-img" loading="lazy">
+          <div class="badge-360">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            360° интерактив
           </div>
         </div>
 
@@ -493,32 +537,73 @@ class MuseumApp {
     });
   }
 
-  // Обработка форм записи и отзывов по ТЗ
+  // Обработка форм записи и отзывов строго по почте (mailto: с автозаполнением)
   bindForms() {
-    // 1. Форма записи на экскурсию
+    // 1. Форма записи на экскурсию (отправка на referent_lp@center.rt.ru + копия polina.strelnikova@rt.ru)
     const bookingForm = document.getElementById("tourBookingForm");
     if (bookingForm) {
       bookingForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        const name = document.getElementById("bookName").value;
-        const phone = document.getElementById("bookPhone").value;
+        const name = document.getElementById("bookName").value.trim();
+        const phone = document.getElementById("bookPhone").value.trim();
         const date = document.getElementById("bookDate").value;
+        const count = document.getElementById("bookCount").value;
+        const formatSelect = document.getElementById("bookFormat");
+        const formatText = formatSelect.options[formatSelect.selectedIndex].text;
 
-        this.showToast(`Спасибо, ${name}! Ваша заявка на ${date} принята. Хранитель музея свяжется с вами по номеру ${phone}.`);
-        bookingForm.reset();
+        const subject = encodeURIComponent(`Заявка на экскурсию в Музей связи: ${name}`);
+        const body = encodeURIComponent(
+`Здравствуйте! Прошу согласовать проведение экскурсии в Музее связи ПАО «Ростелеком» (Липецк, пл. Плеханова, 5).
+
+Данные заявки:
+• Заявитель / Организация: ${name}
+• Телефон для оперативной связи: ${phone}
+• Желаемая дата визита: ${date}
+• Количество посетителей: ${count}
+• Формат экскурсии: ${formatText}
+
+Ждём подтверждения и согласования времени. Спасибо!`
+        );
+
+        const mailtoUrl = `mailto:referent_lp@center.rt.ru?cc=polina.strelnikova@rt.ru&subject=${subject}&body=${body}`;
+        
+        this.showToast(`Открываем почтовый клиент для отправки заявки на referent_lp@center.rt.ru...`);
+        
+        setTimeout(() => {
+          window.location.href = mailtoUrl;
+        }, 300);
       });
     }
 
-    // 2. Форма отзывов и предложений (с адресом referent_lp@center.rt.ru)
+    // 2. Форма отзывов и предложений (отправка на referent_lp@center.rt.ru)
     const feedbackForm = document.getElementById("feedbackForm");
     if (feedbackForm) {
       feedbackForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        const email = document.getElementById("feedEmail").value;
-        const text = document.getElementById("feedText").value;
+        const email = document.getElementById("feedEmail").value.trim();
+        const subjectSelect = document.getElementById("feedSubject");
+        const subjectValue = subjectSelect.value;
+        const text = document.getElementById("feedText").value.trim();
 
-        this.showToast(`Ваш отзыв успешно отправлен на referent_lp@center.rt.ru. Спасибо за вклад в развитие музея!`);
-        feedbackForm.reset();
+        const subject = encodeURIComponent(`[Музей связи] ${subjectValue}`);
+        const body = encodeURIComponent(
+`Здравствуйте!
+
+Тема: ${subjectValue}
+Отправитель: ${email}
+
+Сообщение:
+${text}
+`
+        );
+
+        const mailtoUrl = `mailto:referent_lp@center.rt.ru?subject=${subject}&body=${body}`;
+        
+        this.showToast(`Открываем почтовый клиент для отправки отзыва на referent_lp@center.rt.ru...`);
+        
+        setTimeout(() => {
+          window.location.href = mailtoUrl;
+        }, 300);
       });
     }
   }

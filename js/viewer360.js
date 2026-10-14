@@ -65,13 +65,13 @@ export class Exhibit360Viewer {
       img.src = url;
       img.onload = () => {
         loadedCount++;
-        if (loadedCount === frameUrls.length) {
+        // Отрисовываем первый кадр сразу же, остальные подгружаются в фоне
+        if (i === 0 || loadedCount === frameUrls.length) {
           this.isLoading = false;
           this.render();
         }
       };
       img.onerror = () => {
-        // Fallback to procedural if files not found yet
         this.isLoading = false;
       };
       this.images[i] = img;

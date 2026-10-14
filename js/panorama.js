@@ -1,35 +1,51 @@
-// Модуль виртуального зала (3 режима: 360° панорама, 3 ракурса от входа, 2D-схема залов)
+// Модуль виртуального зала на основе РЕАЛЬНЫХ материалов музея связи Липецка
+// 3 режима: 3 ракурса от входа с реальными фото, 360° панорама зала из PANO, интерактивная 2D-схема
 
 export class HallViewController {
   constructor(containerElement, exhibits, onSelectExhibit) {
     this.container = containerElement;
     this.exhibits = exhibits;
     this.onSelectExhibit = onSelectExhibit;
-    this.currentMode = "photos"; // 'panorama' | 'photos' | 'map'
+    this.currentMode = "photos"; // 'photos' | 'panorama' | 'map'
     this.currentPhotoIndex = 0;
 
-    // Ракурсы зала от входа
+    // Реальные ракурсы музея связи (пл. Плеханова, 5)
     this.photoScenes = [
       {
         id: "entrance",
-        title: "Ракурс 1: Вид от главного входа",
-        subtitle: "Сектор зарождения связи: рабочее место телеграфиста и аппараты Морзе",
-        image: "assets/img/hall_entrance.svg",
-        exhibits: [1, 2, 3]
+        title: "Ракурс 1: Зал телеграфии и ранней связи",
+        subtitle: "Рабочее место телеграфиста XIX в., аппараты Морзе с лентой, настенный телефон",
+        image: "assets/img/hall_view_1.webp",
+        spots: [
+          { exhibitId: 1, x: 26, y: 65 },
+          { exhibitId: 3, x: 51, y: 56 },
+          { exhibitId: 2, x: 64, y: 62 },
+          { exhibitId: 4, x: 89, y: 68 }
+        ]
       },
       {
         id: "central",
-        title: "Ракурс 2: Центральная экспозиция",
-        subtitle: "Эпоха телефонизации, коммутаторы, действующий граммофон и военные репродукторы",
-        image: "assets/img/hall_central.svg",
-        exhibits: [4, 5, 6]
+        title: "Ракурс 2: Центральный зал и технологии",
+        subtitle: "Релейная стойка АТС, светящийся макет здания с муралом, граммофон и сварочник КСС-111",
+        image: "assets/img/hall_view_2.webp",
+        spots: [
+          { exhibitId: 4, x: 33, y: 46 },
+          { exhibitId: 8, x: 63, y: 48 },
+          { exhibitId: 5, x: 71, y: 46 },
+          { exhibitId: 10, x: 78, y: 68 }
+        ]
       },
       {
         id: "modern",
-        title: "Ракурс 3: Сектор новейшей истории и оптики",
-        subtitle: "Бытовая электроника, макет здания на пл. Плеханова, модемы и оптоволокно",
-        image: "assets/img/hall_modern.svg",
-        exhibits: [7, 8, 9, 10]
+        title: "Ракурс 3: Радиовещание и бытовая электроника",
+        subtitle: "Стойка радиосвязи «Липецк — Москва», военный репродуктор «Тарелка», радиола «Латвия», модемы",
+        image: "assets/img/hall_view_3.webp",
+        spots: [
+          { exhibitId: 4, x: 23, y: 55 },
+          { exhibitId: 6, x: 57, y: 34 },
+          { exhibitId: 7, x: 68, y: 56 },
+          { exhibitId: 9, x: 41, y: 76 }
+        ]
       }
     ];
 
@@ -56,11 +72,11 @@ export class HallViewController {
       <div class="modes-toggle-group">
         <button class="mode-btn ${this.currentMode === 'photos' ? 'active' : ''}" data-mode="photos">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Ракурсы от входа (3 фото)
+          Ракурсы зала (3 фото)
         </button>
         <button class="mode-btn ${this.currentMode === 'panorama' ? 'active' : ''}" data-mode="panorama">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-          360° Панорама зала
+          360° Панорама музея
         </button>
         <button class="mode-btn ${this.currentMode === 'map' ? 'active' : ''}" data-mode="map">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
@@ -93,14 +109,14 @@ export class HallViewController {
     this.container.appendChild(viewport);
   }
 
-  // Режим 3 ракурсов от входа
+  // Режим 3 реальных ракурсов зала музея
   renderPhotosMode(viewport) {
     const scene = this.photoScenes[this.currentPhotoIndex];
 
     viewport.innerHTML = `
       <div class="photos-view-container">
         <div class="scene-image-wrapper">
-          <div class="museum-hall-canvas-bg" id="hallSceneVisual"></div>
+          <img src="${scene.image}" alt="${scene.title}" class="real-scene-img" id="sceneRealImg" loading="eager">
           
           <!-- Хотспоты экспонатов -->
           <div class="hotspots-layer" id="hotspotsLayer"></div>
@@ -122,8 +138,8 @@ export class HallViewController {
             <p class="scene-info-sub">${scene.subtitle}</p>
           </div>
           <div class="scene-exhibit-pills">
-            ${scene.exhibits.map(id => {
-              const ex = this.exhibits.find(e => e.id === id);
+            ${scene.spots.map(spot => {
+              const ex = this.exhibits.find(e => e.id === spot.exhibitId);
               return ex ? `<button class="pill-btn" data-exhibit-id="${ex.id}">№${ex.number} ${ex.name}</button>` : '';
             }).join('')}
           </div>
@@ -144,33 +160,21 @@ export class HallViewController {
       });
     });
 
-    // Отрисовка стилизованного зала и хотспотов
-    const visual = viewport.querySelector("#hallSceneVisual");
-    this.drawHallSceneBackground(visual, this.currentPhotoIndex);
-
-    // Добавляем маркеры экспонатов
+    // Расстановка хотспотов на реальном фото
     const layer = viewport.querySelector("#hotspotsLayer");
     this.renderHotspotsForScene(layer, scene);
   }
 
   renderHotspotsForScene(layer, scene) {
     layer.innerHTML = "";
-    scene.exhibits.forEach((exId, idx) => {
-      const ex = this.exhibits.find(e => e.id === exId);
+    scene.spots.forEach((spotData) => {
+      const ex = this.exhibits.find(e => e.id === spotData.exhibitId);
       if (!ex) return;
-
-      // Расположение хотспотов по витринам в кадре
-      const coords = [
-        { x: 26, y: 56 },
-        { x: 50, y: 52 },
-        { x: 74, y: 55 },
-        { x: 88, y: 48 }
-      ][idx] || { x: 50, y: 50 };
 
       const spot = document.createElement("div");
       spot.className = "exhibit-hotspot";
-      spot.style.left = `${coords.x}%`;
-      spot.style.top = `${coords.y}%`;
+      spot.style.left = `${spotData.x}%`;
+      spot.style.top = `${spotData.y}%`;
       spot.setAttribute("role", "button");
       spot.setAttribute("aria-label", `Экспонат ${ex.name}`);
 
@@ -189,18 +193,21 @@ export class HallViewController {
         </div>
       `;
 
-      spot.addEventListener("click", () => this.onSelectExhibit(ex));
+      spot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.onSelectExhibit(ex);
+      });
       layer.appendChild(spot);
     });
   }
 
-  // Режим сферической панорамы 360°
+  // Режим сферической панорамы 360° из реального файла PANO
   renderPanoramaMode(viewport) {
     viewport.innerHTML = `
       <div class="panorama-canvas-wrap">
         <canvas id="panoramaCanvas" class="panorama-canvas"></canvas>
         <div class="pano-controls-overlay">
-          <div class="pano-hint">↔ Зажмите и перетаскивайте для обзора зала 360°</div>
+          <div class="pano-hint">↔ Зажмите и перетаскивайте для обзора реального зала музея 360°</div>
           <div class="pano-btns">
             <button id="panoLeftBtn" class="control-icon-btn" title="Влево">◀</button>
             <button id="panoRightBtn" class="control-icon-btn" title="Вправо">▶</button>
@@ -216,11 +223,15 @@ export class HallViewController {
 
   initPanoramaCanvas(canvas) {
     const ctx = canvas.getContext("2d");
-    let yaw = 0;
+    let scrollOffset = 0;
     let isDragging = false;
     let lastX = 0;
 
+    const panoImg = new Image();
+    panoImg.src = "assets/img/hall_panorama.webp";
+
     const resize = () => {
+      if (!canvas.parentElement) return;
       canvas.width = canvas.parentElement.clientWidth;
       canvas.height = canvas.parentElement.clientHeight;
       draw();
@@ -229,78 +240,67 @@ export class HallViewController {
     const draw = () => {
       const w = canvas.width;
       const h = canvas.height;
+      if (!w || !h) return;
+
       ctx.clearRect(0, 0, w, h);
 
-      // Фон панорамного зала с перспективой
-      const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, "#080D1A");
-      grad.addColorStop(0.5, "#141C33");
-      grad.addColorStop(1, "#0A0F1D");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
+      if (panoImg.complete && panoImg.naturalWidth > 0) {
+        // Отрисовка панорамного полотна с бесшовным повторением по горизонтали
+        const pw = panoImg.naturalWidth;
+        const ph = panoImg.naturalHeight;
+        const scale = h / ph;
+        const scaledWidth = pw * scale;
 
-      // Перспективная сетка музейного зала
-      ctx.strokeStyle = "rgba(0, 194, 255, 0.15)";
-      ctx.lineWidth = 1;
-      const step = 60;
-      const offset = (yaw % step + step) % step;
-
-      for (let x = offset; x < w; x += step) {
-        ctx.beginPath();
-        ctx.moveTo(x, h * 0.45);
-        ctx.lineTo(w / 2 + (x - w / 2) * 2.2, h);
-        ctx.stroke();
-      }
-
-      // Линия горизонта и стендов
-      ctx.beginPath();
-      ctx.moveTo(0, h * 0.45);
-      ctx.lineTo(w, h * 0.45);
-      ctx.strokeStyle = "rgba(119, 44, 232, 0.35)";
-      ctx.stroke();
-
-      // Витрины и экспонаты вдоль панорамы
-      this.exhibits.forEach((ex, i) => {
-        const itemAngle = (i / this.exhibits.length) * 360;
-        let diff = (itemAngle - yaw) % 360;
-        if (diff < -180) diff += 360;
-        if (diff > 180) diff -= 360;
-
-        // Поле зрения ~110 градусов
-        if (Math.abs(diff) < 55) {
-          const screenX = w / 2 + (diff / 55) * (w / 2);
-          const screenY = h * 0.52;
-
-          // Подставка витрины
-          ctx.beginPath();
-          ctx.ellipse(screenX, screenY + 40, 48, 16, 0, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0, 194, 255, 0.25)";
-          ctx.fill();
-
-          // Стенд
-          ctx.fillStyle = "rgba(20, 30, 55, 0.9)";
-          ctx.strokeStyle = "rgba(0, 194, 255, 0.6)";
-          ctx.lineWidth = 1.5;
-          ctx.fillRect(screenX - 35, screenY - 45, 70, 75);
-          ctx.strokeRect(screenX - 35, screenY - 45, 70, 75);
-
-          // Метка с номером
-          ctx.fillStyle = "#FF5E00";
-          ctx.beginPath();
-          ctx.arc(screenX, screenY - 60, 14, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "bold 11px Inter, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText(`№${ex.number}`, screenX, screenY - 56);
-
-          ctx.fillStyle = "#E2E8F0";
-          ctx.font = "600 12px Inter, sans-serif";
-          ctx.fillText(ex.name.length > 18 ? ex.name.slice(0, 16) + '...' : ex.name, screenX, screenY + 15);
+        let x = -((scrollOffset % scaledWidth + scaledWidth) % scaledWidth);
+        while (x < w) {
+          ctx.drawImage(panoImg, x, 0, scaledWidth, h);
+          x += scaledWidth;
         }
-      });
+
+        // Интерактивные маркеры экспонатов вдоль панорамы
+        this.exhibits.forEach((ex, i) => {
+          const itemNormalizedX = (i + 0.5) / this.exhibits.length;
+          const absoluteX = itemNormalizedX * scaledWidth;
+          let screenX = (absoluteX - scrollOffset) % scaledWidth;
+          if (screenX < 0) screenX += scaledWidth;
+
+          if (screenX >= 0 && screenX <= w) {
+            const screenY = h * 0.65;
+
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 16, 0, Math.PI * 2);
+            ctx.fillStyle = "#FF5E00";
+            ctx.shadowColor = "rgba(255, 94, 0, 0.8)";
+            ctx.shadowBlur = 10;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "bold 11px Inter, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`№${ex.number}`, screenX, screenY + 4);
+
+            ctx.fillStyle = "rgba(10, 16, 33, 0.85)";
+            const textWidth = ctx.measureText(ex.name).width;
+            ctx.fillRect(screenX - textWidth / 2 - 8, screenY + 22, textWidth + 16, 22);
+
+            ctx.fillStyle = "#00C2FF";
+            ctx.font = "600 11px Inter, sans-serif";
+            ctx.fillText(ex.name, screenX, screenY + 37);
+          }
+        });
+      } else {
+        // Загрузка
+        ctx.fillStyle = "#080D1A";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#00C2FF";
+        ctx.font = "14px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Загрузка панорамы зала...", w / 2, h / 2);
+      }
     };
+
+    panoImg.onload = () => draw();
 
     canvas.addEventListener("pointerdown", (e) => {
       isDragging = true;
@@ -311,50 +311,56 @@ export class HallViewController {
     canvas.addEventListener("pointermove", (e) => {
       if (!isDragging) return;
       const dx = e.clientX - lastX;
-      yaw -= dx * 0.35;
+      scrollOffset -= dx * 1.5;
       lastX = e.clientX;
       draw();
     });
 
-    const stop = () => { isDragging = false; };
+    const stop = (e) => {
+      if (isDragging) {
+        isDragging = false;
+        try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+    };
     canvas.addEventListener("pointerup", stop);
     canvas.addEventListener("pointercancel", stop);
 
-    // Клик по экспонату на панораме
+    // Клик по маркеру на панораме
     canvas.addEventListener("click", (e) => {
       const rect = canvas.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
-      const w = canvas.width;
       const h = canvas.height;
 
-      this.exhibits.forEach((ex, i) => {
-        const itemAngle = (i / this.exhibits.length) * 360;
-        let diff = (itemAngle - yaw) % 360;
-        if (diff < -180) diff += 360;
-        if (diff > 180) diff -= 360;
+      if (!panoImg.complete) return;
+      const ph = panoImg.naturalHeight;
+      const scale = h / ph;
+      const scaledWidth = panoImg.naturalWidth * scale;
 
-        if (Math.abs(diff) < 55) {
-          const screenX = w / 2 + (diff / 55) * (w / 2);
-          const screenY = h * 0.52;
-          const dist = Math.hypot(clickX - screenX, clickY - screenY);
-          if (dist < 45) {
-            this.onSelectExhibit(ex);
-          }
+      this.exhibits.forEach((ex, i) => {
+        const itemNormalizedX = (i + 0.5) / this.exhibits.length;
+        const absoluteX = itemNormalizedX * scaledWidth;
+        let screenX = (absoluteX - scrollOffset) % scaledWidth;
+        if (screenX < 0) screenX += scaledWidth;
+
+        const screenY = h * 0.65;
+        const dist = Math.hypot(clickX - screenX, clickY - screenY);
+        if (dist < 40) {
+          this.onSelectExhibit(ex);
         }
       });
     });
 
     window.addEventListener("resize", resize);
-    setTimeout(resize, 50);
+    setTimeout(resize, 60);
 
     const leftBtn = this.container.querySelector("#panoLeftBtn");
     const rightBtn = this.container.querySelector("#panoRightBtn");
     const resetBtn = this.container.querySelector("#panoResetBtn");
 
-    if (leftBtn) leftBtn.addEventListener("click", () => { yaw += 25; draw(); });
-    if (rightBtn) rightBtn.addEventListener("click", () => { yaw -= 25; draw(); });
-    if (resetBtn) resetBtn.addEventListener("click", () => { yaw = 0; draw(); });
+    if (leftBtn) leftBtn.addEventListener("click", () => { scrollOffset -= 150; draw(); });
+    if (rightBtn) rightBtn.addEventListener("click", () => { scrollOffset += 150; draw(); });
+    if (resetBtn) resetBtn.addEventListener("click", () => { scrollOffset = 0; draw(); });
   }
 
   // Режим интерактивной схемы зала музея
@@ -389,78 +395,5 @@ export class HallViewController {
         if (ex) this.onSelectExhibit(ex);
       });
     });
-  }
-
-  // Отрисовка атмосферного интерьера зала связи
-  drawHallSceneBackground(element, sceneIndex) {
-    element.innerHTML = `
-      <svg viewBox="0 0 1200 680" class="hall-svg-bg" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0E162B"/>
-            <stop offset="60%" stop-color="#141E38"/>
-            <stop offset="100%" stop-color="#0B1021"/>
-          </linearGradient>
-          <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#16223E"/>
-            <stop offset="40%" stop-color="#1A2A4D"/>
-            <stop offset="100%" stop-color="#0D1426"/>
-          </linearGradient>
-          <linearGradient id="glowStand" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#00C2FF" stop-opacity="0.3"/>
-            <stop offset="100%" stop-color="#772CE8" stop-opacity="0.05"/>
-          </linearGradient>
-        </defs>
-
-        <!-- Стены и освещение зала -->
-        <rect width="1200" height="420" fill="url(#wallGrad)"/>
-        
-        <!-- Верхние музейные софиты -->
-        <circle cx="280" cy="40" r="140" fill="#00C2FF" opacity="0.07" filter="blur(20px)"/>
-        <circle cx="600" cy="40" r="180" fill="#772CE8" opacity="0.08" filter="blur(25px)"/>
-        <circle cx="920" cy="40" r="140" fill="#FF5E00" opacity="0.06" filter="blur(20px)"/>
-
-        <!-- Потолочные споты -->
-        <line x1="100" y1="20" x2="1100" y2="20" stroke="#22325A" stroke-width="3"/>
-        <circle cx="280" cy="20" r="6" fill="#00C2FF"/>
-        <circle cx="600" cy="20" r="6" fill="#772CE8"/>
-        <circle cx="920" cy="20" r="6" fill="#FF5E00"/>
-
-        <!-- Пол выставочного зала с перспективой -->
-        <polygon points="0,420 1200,420 1200,680 0,680" fill="url(#floorGrad)"/>
-        
-        <!-- Линии стыков плитки / дорожек -->
-        <line x1="600" y1="420" x2="600" y2="680" stroke="#24345C" stroke-width="2" stroke-dasharray="8 6"/>
-        <line x1="600" y1="420" x2="150" y2="680" stroke="#202F54" stroke-width="1.5"/>
-        <line x1="600" y1="420" x2="1050" y2="680" stroke="#202F54" stroke-width="1.5"/>
-
-        <!-- Настенный информационный стенд с историей -->
-        <rect x="440" y="90" width="320" height="150" rx="6" fill="#111B33" stroke="#2E4273" stroke-width="2"/>
-        <rect x="460" y="110" width="280" height="24" rx="4" fill="#00C2FF" opacity="0.2"/>
-        <text x="600" y="127" fill="#00C2FF" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">
-          МУЗЕЙ СВЯЗИ • ЛИПЕЦКИЙ ФИЛИАЛ ПАО «РОСТЕЛЕКОМ»
-        </text>
-        <line x1="470" y1="150" x2="730" y2="150" stroke="#334B80" stroke-width="1"/>
-        <line x1="470" y1="170" x2="690" y2="170" stroke="#334B80" stroke-width="1"/>
-        <line x1="470" y1="190" x2="710" y2="190" stroke="#334B80" stroke-width="1"/>
-        <line x1="470" y1="210" x2="620" y2="210" stroke="#334B80" stroke-width="1"/>
-
-        <!-- Витрины экспонатов -->
-        <!-- Витрина 1 -->
-        <rect x="180" y="320" width="180" height="150" rx="8" fill="#131D38" stroke="#00C2FF" stroke-width="1.5"/>
-        <rect x="180" y="320" width="180" height="150" fill="url(#glowStand)"/>
-        <ellipse cx="270" cy="470" rx="100" ry="24" fill="#0A1024" opacity="0.8"/>
-
-        <!-- Витрина 2 (центральная) -->
-        <rect x="500" y="300" width="200" height="170" rx="8" fill="#152040" stroke="#772CE8" stroke-width="1.5"/>
-        <rect x="500" y="300" width="200" height="170" fill="url(#glowStand)"/>
-        <ellipse cx="600" cy="470" rx="115" ry="26" fill="#0A1024" opacity="0.8"/>
-
-        <!-- Витрина 3 -->
-        <rect x="840" y="320" width="180" height="150" rx="8" fill="#131D38" stroke="#FF5E00" stroke-width="1.5"/>
-        <rect x="840" y="320" width="180" height="150" fill="url(#glowStand)"/>
-        <ellipse cx="930" cy="470" rx="100" ry="24" fill="#0A1024" opacity="0.8"/>
-      </svg>
-    `;
   }
 }
