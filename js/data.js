@@ -14,12 +14,8 @@ export const MUSEUM_INFO = {
   },
   schedule: "Понедельник — Пятница: 8:30 – 17:30 (экскурсии по предварительной записи)",
   contacts: {
-    pressSecretary: "Полина Стрельникова",
-    email: "polina.strelnikova@rt.ru",
     feedbackEmail: "referent_lp@center.rt.ru",
-    phone: "+7 (4742) 38-11-65",
-    mobilePhone: "+7 (950) 805-57-84",
-    addressOffice: "398020, г. Липецк, ул. Терешковой, 35А",
+    phone: "+7 (4742) 381-165",
     addressMuseum: "г. Липецк, пл. Плеханова, 5",
     vk: "https://vk.ru/nashpostrel"
   },

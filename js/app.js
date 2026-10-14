@@ -558,7 +558,7 @@ class MuseumApp {
 
   // Обработка форм записи и отзывов строго по почте (mailto: с автозаполнением)
   bindForms() {
-    // 1. Форма записи на экскурсию (отправка на referent_lp@center.rt.ru + копия polina.strelnikova@rt.ru)
+    // 1. Форма записи на экскурсию (отправка на referent_lp@center.rt.ru)
     const bookingForm = document.getElementById("tourBookingForm");
     if (bookingForm) {
       bookingForm.addEventListener("submit", (e) => {
@@ -584,7 +584,7 @@ class MuseumApp {
 Ждём подтверждения и согласования времени. Спасибо!`
         );
 
-        const mailtoUrl = `mailto:referent_lp@center.rt.ru?cc=polina.strelnikova@rt.ru&subject=${subject}&body=${body}`;
+        const mailtoUrl = `mailto:referent_lp@center.rt.ru?subject=${subject}&body=${body}`;
         
         this.showToast(`Открываем почтовый клиент для отправки заявки на referent_lp@center.rt.ru...`);
         
