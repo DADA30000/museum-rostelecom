@@ -1,3 +1,121 @@
 {
-  "test": true
+  "scenes": [
+    {
+      "id": "entrance",
+      "spots": [
+        {
+          "exhibitId": 1,
+          "x": 30,
+          "y": 64
+        },
+        {
+          "exhibitId": 3,
+          "x": 51,
+          "y": 56
+        },
+        {
+          "exhibitId": 2,
+          "x": 65,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "central",
+      "spots": [
+        {
+          "exhibitId": 4,
+          "x": 33,
+          "y": 46
+        },
+        {
+          "exhibitId": 8,
+          "x": 65,
+          "y": 43
+        },
+        {
+          "exhibitId": 5,
+          "x": 73,
+          "y": 46
+        },
+        {
+          "exhibitId": 10,
+          "x": 70,
+          "y": 51
+        },
+        {
+          "exhibitId": 9,
+          "x": 69,
+          "y": 46
+        }
+      ]
+    },
+    {
+      "id": "modern",
+      "spots": [
+        {
+          "exhibitId": 6,
+          "x": 58,
+          "y": 46
+        },
+        {
+          "exhibitId": 7,
+          "x": 70,
+          "y": 53
+        }
+      ]
+    }
+  ],
+  "pano": [
+    {
+      "exhibitId": 1,
+      "normX": 0.116,
+      "normY": 0.608
+    },
+    {
+      "exhibitId": 3,
+      "normX": 0.183,
+      "normY": 0.514
+    },
+    {
+      "exhibitId": 2,
+      "normX": 0.23,
+      "normY": 0.593
+    },
+    {
+      "exhibitId": 4,
+      "normX": 0.437,
+      "normY": 0.417
+    },
+    {
+      "exhibitId": 8,
+      "normX": 0.546,
+      "normY": 0.432
+    },
+    {
+      "exhibitId": 5,
+      "normX": 0.576,
+      "normY": 0.475
+    },
+    {
+      "exhibitId": 10,
+      "normX": 0.561,
+      "normY": 0.439
+    },
+    {
+      "exhibitId": 6,
+      "normX": 0.844,
+      "normY": 0.425
+    },
+    {
+      "exhibitId": 7,
+      "normX": 0.884,
+      "normY": 0.511
+    },
+    {
+      "exhibitId": 9,
+      "normX": 0.565,
+      "normY": 0.511
+    }
+  ]
 }

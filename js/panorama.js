@@ -1,7 +1,7 @@
 /**
  * @fileoverview Virtual exhibition hall controller.
- * Provides multi-view scene management, 2D panoramic canvas viewport with momentum inertia,
- * and an interactive hotspot calibration system for exhibit spatial coordinates.
+ * Provides multi-view scene management and a 2D panoramic canvas viewport with momentum inertia.
+ * Uses calibrated production coordinates for all exhibit markers.
  * @module panorama
  */
 
@@ -17,20 +17,18 @@ export class HallViewController {
     this.onSelectExhibit = onSelectExhibit;
     this.currentMode = "photos"; // 'photos' | 'panorama'
     this.currentPhotoIndex = 0;
-    this.isCalibrating = false;
 
-    // Baseline scene configurations for stationary wide-angle perspectives
-    this.defaultScenes = [
+    // Выверенные эталонные координаты экспонатов для ракурсов зала
+    this.photoScenes = [
       {
         id: "entrance",
         title: "Ракурс 1: Зал телеграфии и ранней связи",
         subtitle: "Рабочее место телеграфиста XIX в., аппараты Морзе с лентой, настенный телефон",
         image: "assets/img/hall_view_1.webp",
         spots: [
-          { exhibitId: 1, x: 26, y: 65 },
+          { exhibitId: 1, x: 30, y: 64 },
           { exhibitId: 3, x: 51, y: 56 },
-          { exhibitId: 2, x: 64, y: 62 },
-          { exhibitId: 4, x: 89, y: 68 }
+          { exhibitId: 2, x: 65, y: 63 }
         ]
       },
       {
@@ -40,9 +38,10 @@ export class HallViewController {
         image: "assets/img/hall_view_2.webp",
         spots: [
           { exhibitId: 4, x: 33, y: 46 },
-          { exhibitId: 8, x: 63, y: 48 },
-          { exhibitId: 5, x: 71, y: 46 },
-          { exhibitId: 10, x: 78, y: 68 }
+          { exhibitId: 8, x: 65, y: 43 },
+          { exhibitId: 5, x: 73, y: 46 },
+          { exhibitId: 10, x: 70, y: 51 },
+          { exhibitId: 9, x: 69, y: 46 }
         ]
       },
       {
@@ -51,104 +50,26 @@ export class HallViewController {
         subtitle: "Стойка радиосвязи «Липецк — Москва», военный репродуктор «Тарелка», радиола «Латвия», модемы",
         image: "assets/img/hall_view_3.webp",
         spots: [
-          { exhibitId: 4, x: 23, y: 55 },
-          { exhibitId: 6, x: 57, y: 34 },
-          { exhibitId: 7, x: 68, y: 56 },
-          { exhibitId: 9, x: 41, y: 76 }
+          { exhibitId: 6, x: 58, y: 46 },
+          { exhibitId: 7, x: 70, y: 53 }
         ]
       }
     ];
 
-    // Normalized coordinates across cylindrical equirectangular canvas [0.0 ... 1.0]
-    this.defaultPanoSpots = [
-      { exhibitId: 1, normX: 0.12, normY: 0.65 },
-      { exhibitId: 3, normX: 0.24, normY: 0.58 },
-      { exhibitId: 2, normX: 0.32, normY: 0.62 },
-      { exhibitId: 4, normX: 0.43, normY: 0.68 },
-      { exhibitId: 8, normX: 0.63, normY: 0.48 },
-      { exhibitId: 5, normX: 0.71, normY: 0.46 },
-      { exhibitId: 10, normX: 0.78, normY: 0.68 },
-      { exhibitId: 4, normX: 0.83, normY: 0.52 },
-      { exhibitId: 6, normX: 0.88, normY: 0.36 },
-      { exhibitId: 7, normX: 0.92, normY: 0.56 },
-      { exhibitId: 9, normX: 0.79, normY: 0.72 }
+    // Выверенные эталонные координаты экспонатов для панорамы зала
+    this.panoSpots = [
+      { exhibitId: 1, normX: 0.116, normY: 0.608 },
+      { exhibitId: 3, normX: 0.183, normY: 0.514 },
+      { exhibitId: 2, normX: 0.23, normY: 0.593 },
+      { exhibitId: 4, normX: 0.437, normY: 0.417 },
+      { exhibitId: 8, normX: 0.546, normY: 0.432 },
+      { exhibitId: 5, normX: 0.576, normY: 0.475 },
+      { exhibitId: 10, normX: 0.561, normY: 0.439 },
+      { exhibitId: 6, normX: 0.844, normY: 0.425 },
+      { exhibitId: 7, normX: 0.884, normY: 0.511 },
+      { exhibitId: 9, normX: 0.565, normY: 0.511 }
     ];
 
-    this.photoScenes = JSON.parse(JSON.stringify(this.defaultScenes));
-    this.panoSpots = JSON.parse(JSON.stringify(this.defaultPanoSpots));
-
-    this.loadCustomCoords();
-    this.render();
-  }
-
-  /**
-   * Restores calibrated hotspot coordinates from persistent browser storage.
-   * @private
-   */
-  loadCustomCoords() {
-    try {
-      const s = localStorage.getItem("rt_museum_hotspot_coords");
-      if (s) {
-        const parsed = JSON.parse(s);
-        if (parsed.scenes) {
-          parsed.scenes.forEach((cs) => {
-            const sc = this.photoScenes.find((s) => s.id === cs.id);
-            if (sc && Array.isArray(cs.spots)) sc.spots = cs.spots;
-          });
-        }
-        if (Array.isArray(parsed.pano)) {
-          this.panoSpots = parsed.pano;
-        }
-        // Автоматически синхронизируем с сервером при загрузке
-        this.saveCustomCoords();
-        return;
-      }
-    } catch (_) {}
-
-    // Попытка загрузить сохраненную на сервере конфигурацию
-    fetch("js/saved_coords.json").then((r) => r.json()).then((parsed) => {
-      if (parsed.scenes) {
-        parsed.scenes.forEach((cs) => {
-          const sc = this.photoScenes.find((s) => s.id === cs.id);
-          if (sc && Array.isArray(cs.spots)) sc.spots = cs.spots;
-        });
-      }
-      if (Array.isArray(parsed.pano)) {
-        this.panoSpots = parsed.pano;
-      }
-      this.render();
-    }).catch(() => {});
-  }
-
-  /**
-   * Persists active hotspot coordinate configuration in localStorage and server storage.
-   */
-  saveCustomCoords() {
-    const data = {
-      scenes: this.photoScenes.map((s) => ({ id: s.id, spots: s.spots })),
-      pano: this.panoSpots
-    };
-    try {
-      localStorage.setItem("rt_museum_hotspot_coords", JSON.stringify(data));
-    } catch (_) {}
-
-    // Отправляем на сервер для сохранения в постоянный файл на диске
-    fetch("/api/save-coords", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    }).then((res) => {
-      if (res.ok) console.log("Координаты сохранены на сервере");
-    }).catch(() => {});
-  }
-
-  /**
-   * Reverts hotspot coordinates to original baseline state.
-   */
-  resetCustomCoords() {
-    localStorage.removeItem("rt_museum_hotspot_coords");
-    this.photoScenes = JSON.parse(JSON.stringify(this.defaultScenes));
-    this.panoSpots = JSON.parse(JSON.stringify(this.defaultPanoSpots));
     this.render();
   }
 
@@ -171,79 +92,6 @@ export class HallViewController {
   }
 
   /**
-   * Toggles hotspot calibration edit mode.
-   */
-  toggleCalibration() {
-    this.isCalibrating = !this.isCalibrating;
-    this.render();
-  }
-
-  /**
-   * Opens dialog to append a new hotspot marker.
-   */
-  addSpotPrompt() {
-    const numStr = prompt("Введите номер экспоната (1 - 10):", "1");
-    if (!numStr) return;
-    const num = parseInt(numStr.trim(), 10);
-    if (isNaN(num) || num < 1 || num > 10) {
-      alert("Номер экспоната должен быть числом от 1 до 10");
-      return;
-    }
-
-    if (this.currentMode === "photos") {
-      const scene = this.photoScenes[this.currentPhotoIndex];
-      scene.spots.push({ exhibitId: num, x: 50, y: 50 });
-      this.saveCustomCoords();
-      this.render();
-    } else {
-      this.panoSpots.push({ exhibitId: num, normX: 0.5, normY: 0.6 });
-      this.saveCustomCoords();
-      this.render();
-    }
-  }
-
-  /**
-   * Removes selected hotspot marker entity.
-   * @param {Object} spotData Hotspot data object to remove.
-   */
-  deleteSpot(spotData) {
-    if (!confirm(`Удалить метку №0${spotData.exhibitId || spotData.ex.id}?`)) return;
-
-    if (this.currentMode === "photos") {
-      const scene = this.photoScenes[this.currentPhotoIndex];
-      scene.spots = scene.spots.filter((s) => s !== spotData);
-      this.saveCustomCoords();
-      this.render();
-    } else {
-      this.panoSpots = this.panoSpots.filter((s) => s !== spotData);
-      this.saveCustomCoords();
-      this.render();
-    }
-  }
-
-  /**
-   * Exports active hotspot coordinates to clipboard or interactive prompt.
-   */
-  copyCoordsJson() {
-    const data = {
-      scenes: this.photoScenes.map((s) => ({ id: s.id, spots: s.spots })),
-      pano: this.panoSpots
-    };
-    const jsonStr = JSON.stringify(data, null, 2);
-
-    // Безопасная попытка копирования с поддержкой обычного HTTP
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-      navigator.clipboard.writeText(jsonStr).then(() => {
-        alert("Координаты скопированы в буфер обмена!");
-      }).catch(() => {
-        prompt("Скопируйте координаты (Ctrl+C / Cmd+C):", jsonStr);
-      });
-    } else {
-      prompt("Скопируйте координаты (Ctrl+C / Cmd+C):", jsonStr);
-    }
-  }
-
-  /**
    * Renders the complete virtual hall DOM layout.
    */
   render() {
@@ -262,36 +110,10 @@ export class HallViewController {
           Панорама музея
         </button>
       </div>
-
-      <div class="modes-tools-group">
-        ${this.isCalibrating ? `
-          <button class="calib-tool-btn" id="addSpotBtn" title="Добавить новую метку">+ Добавить</button>
-          <button class="calib-tool-btn" id="copyJsonBtn" title="Скопировать JSON">Копировать</button>
-          <button class="calib-tool-btn danger" id="resetSpotsBtn" title="Сбросить к исходным">Сброс</button>
-        ` : ''}
-        <button class="mode-calib-btn ${this.isCalibrating ? 'active' : ''}" id="toggleCalibBtn" title="Калибровка позиционирования меток">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 17"/></svg>
-          <span>${this.isCalibrating ? 'Готово' : 'Настроить метки'}</span>
-        </button>
-      </div>
     `;
 
     header.querySelectorAll(".mode-btn").forEach((btn) => {
       btn.addEventListener("click", () => this.setMode(btn.dataset.mode));
-    });
-
-    const calibBtn = header.querySelector("#toggleCalibBtn");
-    if (calibBtn) calibBtn.addEventListener("click", () => this.toggleCalibration());
-
-    const addBtn = header.querySelector("#addSpotBtn");
-    if (addBtn) addBtn.addEventListener("click", () => this.addSpotPrompt());
-
-    const copyBtn = header.querySelector("#copyJsonBtn");
-    if (copyBtn) copyBtn.addEventListener("click", () => this.copyCoordsJson());
-
-    const resetBtn = header.querySelector("#resetSpotsBtn");
-    if (resetBtn) resetBtn.addEventListener("click", () => {
-      if (confirm("Сбросить все метки к исходным координатам?")) this.resetCustomCoords();
     });
 
     this.container.appendChild(header);
@@ -322,12 +144,6 @@ export class HallViewController {
           <img src="${scene.image}" alt="${scene.title}" class="real-scene-img" id="sceneRealImg" loading="eager">
           
           <div class="hotspots-layer" id="hotspotsLayer"></div>
-
-          ${this.isCalibrating ? `
-            <div class="calib-banner">
-              Режим калибровки: переместите метки курсором. Крестик ✕ удаляет метку.
-            </div>
-          ` : ''}
 
           <div class="scene-subnav">
             ${this.photoScenes.map((s, i) => `
@@ -367,87 +183,46 @@ export class HallViewController {
     });
 
     const layer = viewport.querySelector("#hotspotsLayer");
-    const wrapper = viewport.querySelector("#sceneImageWrapper");
-    this.renderHotspotsForScene(layer, wrapper, scene);
+    this.renderHotspotsForScene(layer, scene);
   }
 
   /**
    * Injects interactive hotspot DOM elements for a given stationary scene.
    * @param {HTMLElement} layer Layer element.
-   * @param {HTMLElement} wrapper Reference bounding element.
    * @param {Object} scene Scene configuration.
    * @private
    */
-  renderHotspotsForScene(layer, wrapper, scene) {
+  renderHotspotsForScene(layer, scene) {
     layer.innerHTML = "";
     scene.spots.forEach((spotData) => {
       const ex = this.exhibits.find((e) => e.id === spotData.exhibitId);
       if (!ex) return;
 
       const spot = document.createElement("div");
-      spot.className = `exhibit-hotspot ${this.isCalibrating ? 'calibrating' : ''}`;
+      spot.className = "exhibit-hotspot";
       spot.style.left = `${spotData.x}%`;
       spot.style.top = `${spotData.y}%`;
       spot.setAttribute("role", "button");
+      spot.setAttribute("aria-label", `Экспонат ${ex.name}`);
 
       spot.innerHTML = `
         <div class="hotspot-core">
           <span>№${ex.number}</span>
-          ${this.isCalibrating ? `<button class="spot-delete-btn" title="Удалить метку">✕</button>` : ''}
         </div>
-        ${!this.isCalibrating ? `
-          <div class="hotspot-card">
-            <div class="card-tag">${ex.era}</div>
-            <div class="card-name">${ex.name}</div>
-            <div class="card-action">
-              <span>Осмотр экспоната</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
+        <div class="hotspot-card">
+          <div class="card-tag">${ex.era}</div>
+          <div class="card-name">${ex.name}</div>
+          <div class="card-action">
+            <span>Осмотр экспоната</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
-        ` : ''}
+        </div>
       `;
 
-      if (this.isCalibrating) {
-        const delBtn = spot.querySelector(".spot-delete-btn");
-        if (delBtn) {
-          delBtn.onpointerdown = (e) => e.stopPropagation();
-          delBtn.onclick = (e) => {
-            e.stopPropagation();
-            this.deleteSpot(spotData);
-          };
-        }
-
-        let isDraggingSpot = false;
-        spot.onpointerdown = (e) => {
-          isDraggingSpot = true;
-          spot.setPointerCapture(e.pointerId);
-          e.stopPropagation();
-        };
-        spot.onpointermove = (e) => {
-          if (!isDraggingSpot) return;
-          const rect = wrapper.getBoundingClientRect();
-          const newX = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-          const newY = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-          spotData.x = Math.max(2, Math.min(98, newX));
-          spotData.y = Math.max(2, Math.min(98, newY));
-          spot.style.left = `${spotData.x}%`;
-          spot.style.top = `${spotData.y}%`;
-        };
-        const stopDrag = () => {
-          if (isDraggingSpot) {
-            isDraggingSpot = false;
-            try { spot.releasePointerCapture(e.pointerId); } catch (_) {}
-            this.saveCustomCoords();
-          }
-        };
-        spot.onpointerup = stopDrag;
-        spot.onpointercancel = stopDrag;
-      } else {
-        spot.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.onSelectExhibit(ex);
-        });
-      }
+      spot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.onSelectExhibit(ex);
+      });
 
       layer.appendChild(spot);
     });
@@ -463,15 +238,9 @@ export class HallViewController {
       <div class="panorama-canvas-wrap" id="panoWrap">
         <canvas id="panoramaCanvas" class="panorama-canvas"></canvas>
         <div class="hotspots-layer" id="panoHotspotsLayer"></div>
-        ${this.isCalibrating ? `
-          <div class="calib-banner">
-            Режим калибровки: переместите метки по панораме. Кнопка «+ Добавить» добавляет новую.
-          </div>
-        ` : `
-          <div class="pano-controls-overlay">
-            <div class="pano-hint">↔ ↕ Свободный 2D-обзор зала с инерцией</div>
-          </div>
-        `}
+        <div class="pano-controls-overlay">
+          <div class="pano-hint">↔ ↕ Свободный 2D-обзор зала с инерцией</div>
+        </div>
       </div>
     `;
 
@@ -502,74 +271,25 @@ export class HallViewController {
       if (!ex) return null;
 
       const spot = document.createElement("div");
-      spot.className = `exhibit-hotspot pano-dom-hotspot ${this.isCalibrating ? 'calibrating' : ''}`;
+      spot.className = "exhibit-hotspot pano-dom-hotspot";
       spot.innerHTML = `
         <div class="hotspot-core">
           <span>№${ex.number}</span>
-          ${this.isCalibrating ? `<button class="spot-delete-btn" title="Удалить метку">✕</button>` : ''}
         </div>
-        ${!this.isCalibrating ? `
-          <div class="hotspot-card">
-            <div class="card-tag">${ex.era}</div>
-            <div class="card-name">${ex.name}</div>
-            <div class="card-action">
-              <span>Осмотр экспоната</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
+        <div class="hotspot-card">
+          <div class="card-tag">${ex.era}</div>
+          <div class="card-name">${ex.name}</div>
+          <div class="card-action">
+            <span>Осмотр экспоната</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
-        ` : ''}
+        </div>
       `;
 
-      if (this.isCalibrating) {
-        const delBtn = spot.querySelector(".spot-delete-btn");
-        if (delBtn) {
-          delBtn.onpointerdown = (e) => e.stopPropagation();
-          delBtn.onclick = (e) => {
-            e.stopPropagation();
-            this.deleteSpot(spotData);
-          };
-        }
-
-        let isDraggingSpot = false;
-        spot.onpointerdown = (e) => {
-          isDraggingSpot = true;
-          spot.setPointerCapture(e.pointerId);
-          e.stopPropagation();
-        };
-        spot.onpointermove = (e) => {
-          if (!isDraggingSpot) return;
-          const rect = canvas.getBoundingClientRect();
-          const clickX = e.clientX - rect.left;
-          const clickY = e.clientY - rect.top;
-
-          const ph = panoImg.naturalHeight;
-          const scale = (canvas.height * 1.08) / ph;
-          const scaledWidth = panoImg.naturalWidth * scale;
-          const scaledHeight = ph * scale;
-
-          let absoluteX = (clickX + scrollX) % scaledWidth;
-          if (absoluteX < 0) absoluteX += scaledWidth;
-
-          spotData.normX = +(absoluteX / scaledWidth).toFixed(3);
-          spotData.normY = +((clickY - scrollY) / scaledHeight).toFixed(3);
-
-          draw();
-        };
-        const stopDrag = () => {
-          if (isDraggingSpot) {
-            isDraggingSpot = false;
-            try { spot.releasePointerCapture(e.pointerId); } catch (_) {}
-            this.saveCustomCoords();
-          }
-        };
-        spot.onpointerup = stopDrag;
-        spot.onpointercancel = stopDrag;
-      } else {
-        spot.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.onSelectExhibit(ex);
-        });
-      }
+      spot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.onSelectExhibit(ex);
+      });
 
       hotspotsLayer.appendChild(spot);
       return { el: spot, spotData, ex };
