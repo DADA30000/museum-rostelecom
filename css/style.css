@@ -417,53 +417,196 @@ body.a11y-active a {
 /* 1. Чёрно-жёлтая тема (ГОСТ Р 52872) */
 html.a11y-active[data-a11y-theme="black-yellow"],
 body.a11y-active[data-a11y-theme="black-yellow"] {
-  background: #000000 !important;
+  --bg-deep: #000000 !important;
+  --bg-surface: #000000 !important;
+  --bg-card: #000000 !important;
+  --bg-card-hover: #000000 !important;
+  --border-subtle: #FFE600 !important;
+  --border-hover: #FFE600 !important;
+  --text-main: #FFE600 !important;
+  --text-muted: #FFE600 !important;
+  --text-dim: #FFE600 !important;
+  background-color: #000000 !important;
   color: #FFE600 !important;
 }
 
-html.a11y-active[data-a11y-theme="black-yellow"] *:not(.a11y-toolbar *):not(canvas):not(img):not(video):not(.scene-image-wrapper):not(.hall-viewport):not(.panorama-canvas-wrap):not(.viewer-canvas-wrap):not(.modal-viewer-col):not(.card-visual):not(.real-scene-img):not(.card-cover-img):not(.building-real-img):not(.director-real-photo):not(.modal-video-player):not(.modal-static-img) {
-  border-color: #FFE600 !important;
+html.a11y-active[data-a11y-theme="black-yellow"] p,
+html.a11y-active[data-a11y-theme="black-yellow"] span,
+html.a11y-active[data-a11y-theme="black-yellow"] h1,
+html.a11y-active[data-a11y-theme="black-yellow"] h2,
+html.a11y-active[data-a11y-theme="black-yellow"] h3,
+html.a11y-active[data-a11y-theme="black-yellow"] h4,
+html.a11y-active[data-a11y-theme="black-yellow"] a,
+html.a11y-active[data-a11y-theme="black-yellow"] label,
+html.a11y-active[data-a11y-theme="black-yellow"] li,
+html.a11y-active[data-a11y-theme="black-yellow"] strong,
+html.a11y-active[data-a11y-theme="black-yellow"] button,
+html.a11y-active[data-a11y-theme="black-yellow"] input,
+html.a11y-active[data-a11y-theme="black-yellow"] select,
+html.a11y-active[data-a11y-theme="black-yellow"] textarea {
   color: #FFE600 !important;
+}
+
+html.a11y-active[data-a11y-theme="black-yellow"] .site-header,
+html.a11y-active[data-a11y-theme="black-yellow"] .site-footer,
+html.a11y-active[data-a11y-theme="black-yellow"] .hall-tour-card,
+html.a11y-active[data-a11y-theme="black-yellow"] .hall-modes-bar,
+html.a11y-active[data-a11y-theme="black-yellow"] .scene-footer-info,
+html.a11y-active[data-a11y-theme="black-yellow"] .exhibit-card,
+html.a11y-active[data-a11y-theme="black-yellow"] .timeline-content,
+html.a11y-active[data-a11y-theme="black-yellow"] .building-card-layout,
+html.a11y-active[data-a11y-theme="black-yellow"] .stat-card-2026,
+html.a11y-active[data-a11y-theme="black-yellow"] .director-card,
+html.a11y-active[data-a11y-theme="black-yellow"] .form-card,
+html.a11y-active[data-a11y-theme="black-yellow"] .modal-card,
+html.a11y-active[data-a11y-theme="black-yellow"] .hotspot-card,
+html.a11y-active[data-a11y-theme="black-yellow"] .audio-guide-card,
+html.a11y-active[data-a11y-theme="black-yellow"] input,
+html.a11y-active[data-a11y-theme="black-yellow"] select,
+html.a11y-active[data-a11y-theme="black-yellow"] textarea {
   background-color: #000000 !important;
-  box-shadow: none !important;
+  border-color: #FFE600 !important;
+}
+
+html.a11y-active[data-a11y-theme="black-yellow"] .btn-primary,
+html.a11y-active[data-a11y-theme="black-yellow"] .hotspot-core {
+  background-color: #000000 !important;
+  color: #FFE600 !important;
+  border: 3px solid #FFE600 !important;
 }
 
 /* 2. Бело-чёрная тема */
 html.a11y-active[data-a11y-theme="white-black"],
 body.a11y-active[data-a11y-theme="white-black"] {
-  background: #FFFFFF !important;
+  --bg-deep: #FFFFFF !important;
+  --bg-surface: #FFFFFF !important;
+  --bg-card: #FFFFFF !important;
+  --bg-card-hover: #FFFFFF !important;
+  --border-subtle: #000000 !important;
+  --border-hover: #000000 !important;
+  --text-main: #000000 !important;
+  --text-muted: #000000 !important;
+  --text-dim: #000000 !important;
+  background-color: #FFFFFF !important;
   color: #000000 !important;
 }
 
-html.a11y-active[data-a11y-theme="white-black"] *:not(.a11y-toolbar *):not(canvas):not(img):not(video):not(.scene-image-wrapper):not(.hall-viewport):not(.panorama-canvas-wrap):not(.viewer-canvas-wrap):not(.modal-viewer-col):not(.card-visual):not(.real-scene-img):not(.card-cover-img):not(.building-real-img):not(.director-real-photo):not(.modal-video-player):not(.modal-static-img) {
-  border-color: #000000 !important;
+html.a11y-active[data-a11y-theme="white-black"] p,
+html.a11y-active[data-a11y-theme="white-black"] span,
+html.a11y-active[data-a11y-theme="white-black"] h1,
+html.a11y-active[data-a11y-theme="white-black"] h2,
+html.a11y-active[data-a11y-theme="white-black"] h3,
+html.a11y-active[data-a11y-theme="white-black"] h4,
+html.a11y-active[data-a11y-theme="white-black"] a,
+html.a11y-active[data-a11y-theme="white-black"] label,
+html.a11y-active[data-a11y-theme="white-black"] li,
+html.a11y-active[data-a11y-theme="white-black"] strong,
+html.a11y-active[data-a11y-theme="white-black"] button,
+html.a11y-active[data-a11y-theme="white-black"] input,
+html.a11y-active[data-a11y-theme="white-black"] select,
+html.a11y-active[data-a11y-theme="white-black"] textarea {
   color: #000000 !important;
+}
+
+html.a11y-active[data-a11y-theme="white-black"] .site-header,
+html.a11y-active[data-a11y-theme="white-black"] .site-footer,
+html.a11y-active[data-a11y-theme="white-black"] .hall-tour-card,
+html.a11y-active[data-a11y-theme="white-black"] .hall-modes-bar,
+html.a11y-active[data-a11y-theme="white-black"] .scene-footer-info,
+html.a11y-active[data-a11y-theme="white-black"] .exhibit-card,
+html.a11y-active[data-a11y-theme="white-black"] .timeline-content,
+html.a11y-active[data-a11y-theme="white-black"] .building-card-layout,
+html.a11y-active[data-a11y-theme="white-black"] .stat-card-2026,
+html.a11y-active[data-a11y-theme="white-black"] .director-card,
+html.a11y-active[data-a11y-theme="white-black"] .form-card,
+html.a11y-active[data-a11y-theme="white-black"] .modal-card,
+html.a11y-active[data-a11y-theme="white-black"] .hotspot-card,
+html.a11y-active[data-a11y-theme="white-black"] .audio-guide-card,
+html.a11y-active[data-a11y-theme="white-black"] input,
+html.a11y-active[data-a11y-theme="white-black"] select,
+html.a11y-active[data-a11y-theme="white-black"] textarea {
   background-color: #FFFFFF !important;
-  box-shadow: none !important;
+  border-color: #000000 !important;
+}
+
+html.a11y-active[data-a11y-theme="white-black"] .btn-primary,
+html.a11y-active[data-a11y-theme="white-black"] .hotspot-core {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
 }
 
 /* 3. Контрастная тёмная тема */
 html.a11y-active[data-a11y-theme="high-contrast-dark"],
 body.a11y-active[data-a11y-theme="high-contrast-dark"] {
-  background: #000000 !important;
+  --bg-deep: #000000 !important;
+  --bg-surface: #0a0a0a !important;
+  --bg-card: #050505 !important;
+  --bg-card-hover: #111111 !important;
+  --border-subtle: #FFFFFF !important;
+  --border-hover: #FFFFFF !important;
+  --text-main: #FFFFFF !important;
+  --text-muted: #E2E8F0 !important;
+  --text-dim: #CBD5E1 !important;
+  background-color: #000000 !important;
   color: #FFFFFF !important;
 }
 
-html.a11y-active[data-a11y-theme="high-contrast-dark"] *:not(.a11y-toolbar *):not(canvas):not(img):not(video):not(.scene-image-wrapper):not(.hall-viewport):not(.panorama-canvas-wrap):not(.viewer-canvas-wrap):not(.modal-viewer-col):not(.card-visual):not(.real-scene-img):not(.card-cover-img):not(.building-real-img):not(.director-real-photo):not(.modal-video-player):not(.modal-static-img) {
-  border-color: #FFFFFF !important;
+html.a11y-active[data-a11y-theme="high-contrast-dark"] p,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] span,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] h1,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] h2,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] h3,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] h4,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] a,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] label,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] li,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] strong,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] button,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] input,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] select,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] textarea {
   color: #FFFFFF !important;
+}
+
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .site-header,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .site-footer,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .hall-tour-card,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .hall-modes-bar,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .scene-footer-info,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .exhibit-card,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .timeline-content,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .building-card-layout,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .stat-card-2026,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .director-card,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .form-card,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .modal-card,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .hotspot-card,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .audio-guide-card,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] input,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] select,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] textarea {
   background-color: #000000 !important;
-  box-shadow: none !important;
+  border: 2px solid #FFFFFF !important;
 }
 
 html.a11y-active[data-a11y-theme="high-contrast-dark"] .btn-primary,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] .hotspot-core {
   background-color: #FFFFFF !important;
   color: #000000 !important;
+  border: 3px solid #FFFFFF !important;
   font-weight: 900 !important;
 }
 
-/* Гарантия видимости медиа-контента в спец-темах */
+/* Все слои медиа остаются прозрачными и видимыми */
+.hotspots-layer,
+.scene-image-wrapper,
+.panorama-canvas-wrap,
+.viewer-canvas-wrap {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
 html.a11y-active canvas,
 html.a11y-active img,
 html.a11y-active video,

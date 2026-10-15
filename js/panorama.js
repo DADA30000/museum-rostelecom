@@ -616,7 +616,6 @@ export class HallViewController {
     };
 
     canvas.addEventListener("pointerdown", (e) => {
-      if (this.isCalibrating) return;
       isDragging = true;
       lastX = e.clientX;
       lastY = e.clientY;
