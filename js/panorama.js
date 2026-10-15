@@ -1,20 +1,26 @@
-// Модуль виртуального зала на основе РЕАЛЬНЫХ материалов музея связи Липецка
-// 2 режима: 3 ракурса зала и Панорама музея с 2D-навигацией, инерцией и визуальной калибровкой меток
+/**
+ * @fileoverview Virtual exhibition hall controller.
+ * Provides multi-view scene management, 2D panoramic canvas viewport with momentum inertia,
+ * and an interactive hotspot calibration system for exhibit spatial coordinates.
+ * @module panorama
+ */
 
 export class HallViewController {
+  /**
+   * @param {HTMLElement} containerElement Target DOM root for the tour viewport.
+   * @param {Array<Object>} exhibits Exhibition catalog data.
+   * @param {Function} onSelectExhibit Callback invoked when an exhibit hotspot is selected.
+   */
   constructor(containerElement, exhibits, onSelectExhibit) {
     this.container = containerElement;
     this.exhibits = exhibits;
     this.onSelectExhibit = onSelectExhibit;
     this.currentMode = "photos"; // 'photos' | 'panorama'
     this.currentPhotoIndex = 0;
-    this.isCalibrating = false; // режим перетаскивания меток пользователем
+    this.isCalibrating = false;
 
-    // Загружаем сохраненные пользователем калибровки из localStorage, если есть
-    this.customCoords = this.loadCustomCoords();
-
-    // Базовые координаты 3 ракурсов
-    this.photoScenes = [
+    // Baseline scene configurations for stationary wide-angle perspectives
+    this.defaultScenes = [
       {
         id: "entrance",
         title: "Ракурс 1: Зал телеграфии и ранней связи",
@@ -53,8 +59,8 @@ export class HallViewController {
       }
     ];
 
-    // Точные координаты экспонатов на бесшовной панораме (0.0 ... 1.0 по ширине полотна)
-    this.panoSpots = [
+    // Normalized coordinates across cylindrical equirectangular canvas [0.0 ... 1.0]
+    this.defaultPanoSpots = [
       { exhibitId: 1, normX: 0.12, normY: 0.65 },
       { exhibitId: 3, normX: 0.24, normY: 0.58 },
       { exhibitId: 2, normX: 0.32, normY: 0.62 },
@@ -68,64 +74,144 @@ export class HallViewController {
       { exhibitId: 9, normX: 0.79, normY: 0.72 }
     ];
 
-    this.applyCustomCoords();
+    this.photoScenes = JSON.parse(JSON.stringify(this.defaultScenes));
+    this.panoSpots = JSON.parse(JSON.stringify(this.defaultPanoSpots));
+
+    this.loadCustomCoords();
     this.render();
   }
 
+  /**
+   * Restores calibrated hotspot coordinates from persistent browser storage.
+   * @private
+   */
   loadCustomCoords() {
     try {
       const s = localStorage.getItem("rt_museum_hotspot_coords");
-      return s ? JSON.parse(s) : null;
-    } catch (_) {
-      return null;
-    }
+      if (!s) return;
+      const parsed = JSON.parse(s);
+      if (parsed.scenes) {
+        parsed.scenes.forEach((cs) => {
+          const sc = this.photoScenes.find((s) => s.id === cs.id);
+          if (sc && Array.isArray(cs.spots)) sc.spots = cs.spots;
+        });
+      }
+      if (Array.isArray(parsed.pano)) {
+        this.panoSpots = parsed.pano;
+      }
+    } catch (_) {}
   }
 
+  /**
+   * Persists active hotspot coordinate configuration in localStorage.
+   */
   saveCustomCoords() {
     localStorage.setItem("rt_museum_hotspot_coords", JSON.stringify({
-      scenes: this.photoScenes.map(s => ({ id: s.id, spots: s.spots })),
+      scenes: this.photoScenes.map((s) => ({ id: s.id, spots: s.spots })),
       pano: this.panoSpots
     }));
   }
 
-  applyCustomCoords() {
-    if (!this.customCoords) return;
-    if (this.customCoords.scenes) {
-      this.customCoords.scenes.forEach(cs => {
-        const sc = this.photoScenes.find(s => s.id === cs.id);
-        if (sc && cs.spots) sc.spots = cs.spots;
-      });
-    }
-    if (this.customCoords.pano) {
-      this.panoSpots = this.customCoords.pano;
-    }
-  }
-
+  /**
+   * Reverts hotspot coordinates to original baseline state.
+   */
   resetCustomCoords() {
     localStorage.removeItem("rt_museum_hotspot_coords");
-    this.customCoords = null;
-    location.reload();
+    this.photoScenes = JSON.parse(JSON.stringify(this.defaultScenes));
+    this.panoSpots = JSON.parse(JSON.stringify(this.defaultPanoSpots));
+    this.render();
   }
 
+  /**
+   * Sets active tour visualization mode.
+   * @param {'photos'|'panorama'} mode Target mode.
+   */
   setMode(mode) {
     this.currentMode = mode;
     this.render();
   }
 
+  /**
+   * Sets active stationary photo index.
+   * @param {number} idx Target scene index.
+   */
   setPhotoIndex(idx) {
     this.currentPhotoIndex = idx;
     this.render();
   }
 
+  /**
+   * Toggles hotspot calibration edit mode.
+   */
   toggleCalibration() {
     this.isCalibrating = !this.isCalibrating;
     this.render();
   }
 
+  /**
+   * Opens dialog to append a new hotspot marker.
+   */
+  addSpotPrompt() {
+    const numStr = prompt("Введите номер экспоната (1 - 10):", "1");
+    if (!numStr) return;
+    const num = parseInt(numStr.trim(), 10);
+    if (isNaN(num) || num < 1 || num > 10) {
+      alert("Номер экспоната должен быть числом от 1 до 10");
+      return;
+    }
+
+    if (this.currentMode === "photos") {
+      const scene = this.photoScenes[this.currentPhotoIndex];
+      scene.spots.push({ exhibitId: num, x: 50, y: 50 });
+      this.saveCustomCoords();
+      this.render();
+    } else {
+      this.panoSpots.push({ exhibitId: num, normX: 0.5, normY: 0.6 });
+      this.saveCustomCoords();
+      this.render();
+    }
+  }
+
+  /**
+   * Removes selected hotspot marker entity.
+   * @param {Object} spotData Hotspot data object to remove.
+   */
+  deleteSpot(spotData) {
+    if (!confirm(`Удалить метку №0${spotData.exhibitId || spotData.ex.id}?`)) return;
+
+    if (this.currentMode === "photos") {
+      const scene = this.photoScenes[this.currentPhotoIndex];
+      scene.spots = scene.spots.filter((s) => s !== spotData);
+      this.saveCustomCoords();
+      this.render();
+    } else {
+      this.panoSpots = this.panoSpots.filter((s) => s !== spotData);
+      this.saveCustomCoords();
+      this.render();
+    }
+  }
+
+  /**
+   * Exports active hotspot coordinates to system clipboard in JSON format.
+   */
+  copyCoordsJson() {
+    const data = {
+      scenes: this.photoScenes.map((s) => ({ id: s.id, spots: s.spots })),
+      pano: this.panoSpots
+    };
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+      alert("Координаты скопированы в буфер обмена");
+    }).catch(() => {
+      prompt("Скопируйте координаты:", JSON.stringify(data));
+    });
+  }
+
+  /**
+   * Renders the complete virtual hall DOM layout.
+   */
   render() {
     this.container.innerHTML = "";
 
-    // Шапка переключателей режимов зала
     const header = document.createElement("div");
     header.className = "hall-modes-bar";
     header.innerHTML = `
@@ -141,9 +227,14 @@ export class HallViewController {
       </div>
 
       <div class="modes-tools-group">
-        <button class="mode-calib-btn ${this.isCalibrating ? 'active' : ''}" id="toggleCalibBtn" title="Перетаскивание меток прямо по экрану">
+        ${this.isCalibrating ? `
+          <button class="calib-tool-btn" id="addSpotBtn" title="Добавить новую метку">+ Добавить</button>
+          <button class="calib-tool-btn" id="copyJsonBtn" title="Скопировать JSON">Копировать</button>
+          <button class="calib-tool-btn danger" id="resetSpotsBtn" title="Сбросить к исходным">Сброс</button>
+        ` : ''}
+        <button class="mode-calib-btn ${this.isCalibrating ? 'active' : ''}" id="toggleCalibBtn" title="Калибровка позиционирования меток">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 17"/></svg>
-          <span>${this.isCalibrating ? 'Готово (сохранить)' : 'Настроить метки'}</span>
+          <span>${this.isCalibrating ? 'Готово' : 'Настроить метки'}</span>
         </button>
       </div>
     `;
@@ -153,13 +244,21 @@ export class HallViewController {
     });
 
     const calibBtn = header.querySelector("#toggleCalibBtn");
-    if (calibBtn) {
-      calibBtn.addEventListener("click", () => this.toggleCalibration());
-    }
+    if (calibBtn) calibBtn.addEventListener("click", () => this.toggleCalibration());
+
+    const addBtn = header.querySelector("#addSpotBtn");
+    if (addBtn) addBtn.addEventListener("click", () => this.addSpotPrompt());
+
+    const copyBtn = header.querySelector("#copyJsonBtn");
+    if (copyBtn) copyBtn.addEventListener("click", () => this.copyCoordsJson());
+
+    const resetBtn = header.querySelector("#resetSpotsBtn");
+    if (resetBtn) resetBtn.addEventListener("click", () => {
+      if (confirm("Сбросить все метки к исходным координатам?")) this.resetCustomCoords();
+    });
 
     this.container.appendChild(header);
 
-    // Основное видовое пространство
     const viewport = document.createElement("div");
     viewport.className = "hall-viewport";
 
@@ -172,7 +271,11 @@ export class HallViewController {
     this.container.appendChild(viewport);
   }
 
-  // Режим 3 реальных ракурсов зала музея
+  /**
+   * Renders stationary photographic scene with hotspot overlay.
+   * @param {HTMLElement} viewport Viewport DOM container.
+   * @private
+   */
   renderPhotosMode(viewport) {
     const scene = this.photoScenes[this.currentPhotoIndex];
 
@@ -181,16 +284,14 @@ export class HallViewController {
         <div class="scene-image-wrapper" id="sceneImageWrapper">
           <img src="${scene.image}" alt="${scene.title}" class="real-scene-img" id="sceneRealImg" loading="eager">
           
-          <!-- Хотспоты экспонатов -->
           <div class="hotspots-layer" id="hotspotsLayer"></div>
 
           ${this.isCalibrating ? `
             <div class="calib-banner">
-              💡 Режим калибровки: перетащите метки мышкой или пальцем в нужную точку на фото!
+              Режим калибровки: переместите метки курсором. Крестик ✕ удаляет метку.
             </div>
           ` : ''}
 
-          <!-- Навигация между 3 ракурсами -->
           <div class="scene-subnav">
             ${this.photoScenes.map((s, i) => `
               <button class="scene-chip ${i === this.currentPhotoIndex ? 'active' : ''}" data-idx="${i}">
@@ -207,8 +308,8 @@ export class HallViewController {
             <p class="scene-info-sub">${scene.subtitle}</p>
           </div>
           <div class="scene-exhibit-pills">
-            ${scene.spots.map(spot => {
-              const ex = this.exhibits.find(e => e.id === spot.exhibitId);
+            ${scene.spots.map((spot) => {
+              const ex = this.exhibits.find((e) => e.id === spot.exhibitId);
               return ex ? `<button class="pill-btn" data-exhibit-id="${ex.id}">№${ex.number} ${ex.name}</button>` : '';
             }).join('')}
           </div>
@@ -216,14 +317,14 @@ export class HallViewController {
       </div>
     `;
 
-    viewport.querySelectorAll(".scene-chip").forEach(btn => {
+    viewport.querySelectorAll(".scene-chip").forEach((btn) => {
       btn.addEventListener("click", () => this.setPhotoIndex(parseInt(btn.dataset.idx, 10)));
     });
 
-    viewport.querySelectorAll(".pill-btn").forEach(btn => {
+    viewport.querySelectorAll(".pill-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = parseInt(btn.dataset.exhibitId, 10);
-        const ex = this.exhibits.find(e => e.id === id);
+        const ex = this.exhibits.find((e) => e.id === id);
         if (ex) this.onSelectExhibit(ex);
       });
     });
@@ -233,10 +334,17 @@ export class HallViewController {
     this.renderHotspotsForScene(layer, wrapper, scene);
   }
 
+  /**
+   * Injects interactive hotspot DOM elements for a given stationary scene.
+   * @param {HTMLElement} layer Layer element.
+   * @param {HTMLElement} wrapper Reference bounding element.
+   * @param {Object} scene Scene configuration.
+   * @private
+   */
   renderHotspotsForScene(layer, wrapper, scene) {
     layer.innerHTML = "";
     scene.spots.forEach((spotData) => {
-      const ex = this.exhibits.find(e => e.id === spotData.exhibitId);
+      const ex = this.exhibits.find((e) => e.id === spotData.exhibitId);
       if (!ex) return;
 
       const spot = document.createElement("div");
@@ -248,6 +356,7 @@ export class HallViewController {
       spot.innerHTML = `
         <div class="hotspot-core">
           <span>№${ex.number}</span>
+          ${this.isCalibrating ? `<button class="spot-delete-btn" title="Удалить метку">✕</button>` : ''}
         </div>
         ${!this.isCalibrating ? `
           <div class="hotspot-card">
@@ -262,7 +371,15 @@ export class HallViewController {
       `;
 
       if (this.isCalibrating) {
-        // Перетаскивание метки прямо по экрану в режиме калибровки
+        const delBtn = spot.querySelector(".spot-delete-btn");
+        if (delBtn) {
+          delBtn.onpointerdown = (e) => e.stopPropagation();
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.deleteSpot(spotData);
+          };
+        }
+
         let isDraggingSpot = false;
         spot.onpointerdown = (e) => {
           isDraggingSpot = true;
@@ -279,12 +396,11 @@ export class HallViewController {
           spot.style.left = `${spotData.x}%`;
           spot.style.top = `${spotData.y}%`;
         };
-        const stopDrag = (e) => {
+        const stopDrag = () => {
           if (isDraggingSpot) {
             isDraggingSpot = false;
             try { spot.releasePointerCapture(e.pointerId); } catch (_) {}
             this.saveCustomCoords();
-            console.log(`Новые координаты для ${scene.id}:`, JSON.stringify(scene.spots));
           }
         };
         spot.onpointerup = stopDrag;
@@ -300,15 +416,25 @@ export class HallViewController {
     });
   }
 
-  // Режим панорамы зала с точным позиционированием и калибровкой
+  /**
+   * Initializes 2D panoramic canvas viewport with momentum physics.
+   * @param {HTMLElement} viewport Viewport DOM container.
+   * @private
+   */
   renderPanoramaMode(viewport) {
     viewport.innerHTML = `
       <div class="panorama-canvas-wrap" id="panoWrap">
         <canvas id="panoramaCanvas" class="panorama-canvas"></canvas>
         <div class="hotspots-layer" id="panoHotspotsLayer"></div>
-        <div class="pano-controls-overlay">
-          <div class="pano-hint">↔ ↕ Зажмите и перетаскивайте для свободного обзора зала</div>
-        </div>
+        ${this.isCalibrating ? `
+          <div class="calib-banner">
+            Режим калибровки: переместите метки по панораме. Кнопка «+ Добавить» добавляет новую.
+          </div>
+        ` : `
+          <div class="pano-controls-overlay">
+            <div class="pano-hint">↔ ↕ Свободный 2D-обзор зала с инерцией</div>
+          </div>
+        `}
       </div>
     `;
 
@@ -317,6 +443,12 @@ export class HallViewController {
     this.initPanoramaCanvas(canvas, hotspotsLayer);
   }
 
+  /**
+   * Sets up 2D canvas rendering and inertial interaction loop for cylindrical panorama.
+   * @param {HTMLCanvasElement} canvas Target canvas.
+   * @param {HTMLElement} hotspotsLayer Overlay container for vector hotspot nodes.
+   * @private
+   */
   initPanoramaCanvas(canvas, hotspotsLayer) {
     const ctx = canvas.getContext("2d");
     let scrollX = 0;
@@ -328,9 +460,8 @@ export class HallViewController {
     let velocityY = 0;
     let lastTime = 0;
 
-    // Создаём HTML-метки для экспонатов на панораме
     const markerElements = this.panoSpots.map((spotData) => {
-      const ex = this.exhibits.find(e => e.id === spotData.exhibitId);
+      const ex = this.exhibits.find((e) => e.id === spotData.exhibitId);
       if (!ex) return null;
 
       const spot = document.createElement("div");
@@ -338,6 +469,7 @@ export class HallViewController {
       spot.innerHTML = `
         <div class="hotspot-core">
           <span>№${ex.number}</span>
+          ${this.isCalibrating ? `<button class="spot-delete-btn" title="Удалить метку">✕</button>` : ''}
         </div>
         ${!this.isCalibrating ? `
           <div class="hotspot-card">
@@ -352,6 +484,15 @@ export class HallViewController {
       `;
 
       if (this.isCalibrating) {
+        const delBtn = spot.querySelector(".spot-delete-btn");
+        if (delBtn) {
+          delBtn.onpointerdown = (e) => e.stopPropagation();
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.deleteSpot(spotData);
+          };
+        }
+
         let isDraggingSpot = false;
         spot.onpointerdown = (e) => {
           isDraggingSpot = true;
@@ -377,12 +518,11 @@ export class HallViewController {
 
           draw();
         };
-        const stopDrag = (e) => {
+        const stopDrag = () => {
           if (isDraggingSpot) {
             isDraggingSpot = false;
             try { spot.releasePointerCapture(e.pointerId); } catch (_) {}
             this.saveCustomCoords();
-            console.log("Новые координаты панорамы:", JSON.stringify(this.panoSpots));
           }
         };
         spot.onpointerup = stopDrag;
@@ -438,14 +578,12 @@ export class HallViewController {
         const scaledWidth = pw * scale;
         const scaledHeight = ph * scale;
 
-        // Бесшовное циклическое рисование панорамы по X
         let x = -((scrollX % scaledWidth + scaledWidth) % scaledWidth);
         while (x < w) {
           ctx.drawImage(panoImg, x, scrollY, scaledWidth, scaledHeight);
           x += scaledWidth;
         }
 
-        // Обновляем позиции векторных HTML-маркеров
         markerElements.forEach(({ el, spotData }) => {
           const absoluteX = spotData.normX * scaledWidth;
           let screenX = (absoluteX - scrollX) % scaledWidth;
@@ -478,6 +616,7 @@ export class HallViewController {
     };
 
     canvas.addEventListener("pointerdown", (e) => {
+      if (this.isCalibrating) return;
       isDragging = true;
       lastX = e.clientX;
       lastY = e.clientY;
@@ -517,7 +656,6 @@ export class HallViewController {
     canvas.addEventListener("pointerup", stop);
     canvas.addEventListener("pointercancel", stop);
 
-    // Цикл плавной инерции
     const inertiaLoop = () => {
       if (!isDragging && (Math.abs(velocityX) > 0.02 || Math.abs(velocityY) > 0.02)) {
         scrollX -= velocityX * 10;

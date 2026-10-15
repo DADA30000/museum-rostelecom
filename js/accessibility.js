@@ -1,7 +1,13 @@
-// Модуль доступности (ОВЗ / версия для слабовидящих по ГОСТ Р 52872)
-// Дополнительные баллы по ТЗ хакатона
+/**
+ * @fileoverview Accessibility Manager (WCAG 2.1 / ГОСТ Р 52872).
+ * Manages high-contrast themes, root typography scaling, and accessibility state persistence.
+ * @module accessibility
+ */
 
 export class AccessibilityManager {
+  /**
+   * Initializes accessibility state from persistent storage or default parameters.
+   */
   constructor() {
     this.isActive = false;
     this.fontSize = "normal"; // 'normal' | 'large' | 'xlarge'
@@ -10,19 +16,30 @@ export class AccessibilityManager {
     this.init();
   }
 
+  /**
+   * Restores persisted user accessibility preferences.
+   * @private
+   */
   init() {
     const saved = localStorage.getItem("rt_museum_a11y");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        this.isActive = parsed.isActive || false;
+        this.isActive = Boolean(parsed.isActive);
         this.fontSize = parsed.fontSize || "normal";
         this.contrastTheme = parsed.contrastTheme || "black-yellow";
-      } catch (_) {}
+      } catch (_) {
+        // Fallback to default state on corrupted storage
+      }
     }
     this.applySettings();
   }
 
+  /**
+   * Toggles active state of accessibility mode.
+   * @param {boolean} [forceState] Optional explicit target state.
+   * @returns {boolean} Current active state.
+   */
   toggleA11y(forceState) {
     this.isActive = typeof forceState === "boolean" ? forceState : !this.isActive;
     this.saveSettings();
@@ -30,18 +47,30 @@ export class AccessibilityManager {
     return this.isActive;
   }
 
+  /**
+   * Updates base root typography scale.
+   * @param {'normal'|'large'|'xlarge'} size Target font size scale.
+   */
   setFontSize(size) {
     this.fontSize = size;
     this.saveSettings();
     this.applySettings();
   }
 
+  /**
+   * Updates high-contrast color scheme.
+   * @param {'black-yellow'|'white-black'|'high-contrast-dark'} theme Target contrast theme.
+   */
   setContrastTheme(theme) {
     this.contrastTheme = theme;
     this.saveSettings();
     this.applySettings();
   }
 
+  /**
+   * Persists current accessibility configuration in localStorage.
+   * @private
+   */
   saveSettings() {
     localStorage.setItem("rt_museum_a11y", JSON.stringify({
       isActive: this.isActive,
@@ -50,6 +79,10 @@ export class AccessibilityManager {
     }));
   }
 
+  /**
+   * Synchronizes DOM attributes and styles with the current accessibility configuration.
+   * @private
+   */
   applySettings() {
     const root = document.documentElement;
 
@@ -58,7 +91,7 @@ export class AccessibilityManager {
       root.setAttribute("data-a11y-font", this.fontSize);
       root.setAttribute("data-a11y-theme", this.contrastTheme);
 
-      // Реальное увеличение базового шрифта страницы
+      // Root typography scale mapping
       if (this.fontSize === "large") {
         root.style.fontSize = "20px";
       } else if (this.fontSize === "xlarge") {
@@ -73,11 +106,10 @@ export class AccessibilityManager {
       root.style.fontSize = "";
     }
 
-    // Обновляем состояние кнопки в шапке
     const toggleBtn = document.getElementById("a11yToggleBtn");
     if (toggleBtn) {
       toggleBtn.classList.toggle("active", this.isActive);
-      toggleBtn.setAttribute("aria-pressed", this.isActive.toString());
+      toggleBtn.setAttribute("aria-pressed", String(this.isActive));
     }
 
     const panel = document.getElementById("a11yPanel");
@@ -85,7 +117,6 @@ export class AccessibilityManager {
       panel.classList.toggle("hidden", !this.isActive);
     }
 
-    // Обновляем активные кнопки внутри панели
     document.querySelectorAll("[data-a11y-set-font]").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.a11ySetFont === this.fontSize);
     });

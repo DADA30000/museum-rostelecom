@@ -1,10 +1,19 @@
-// Главный скрипт Цифрового музея связи «Ростелеком» (Липецк)
+/**
+ * @fileoverview Main application controller for Rostelecom Museum Digital Branch.
+ * Orchestrates view lifecycle, exhibit catalogue rendering, modal dialogues,
+ * audio guide track management, scroll observation, and mailto form submissions.
+ * @module app
+ */
+
 import { MUSEUM_INFO, EXHIBITS, TIMELINE } from "./data.js";
 import { Exhibit360Viewer } from "./viewer360.js";
 import { HallViewController } from "./panorama.js";
 import { AccessibilityManager } from "./accessibility.js";
 
 class MuseumApp {
+  /**
+   * Initializes application state and lifecycle subroutines.
+   */
   constructor() {
     this.exhibits = EXHIBITS;
     this.selectedCategory = "all";
@@ -14,10 +23,14 @@ class MuseumApp {
     this.hallController = null;
     this.a11y = new AccessibilityManager();
     this.isPlayingAudio = false;
+    this.currentAudio = null;
 
     this.init();
   }
 
+  /**
+   * Bootstrap entrypoint.
+   */
   init() {
     this.renderHeaderInfo();
     this.initHallTour();
@@ -32,6 +45,11 @@ class MuseumApp {
     this.initScrollSpy();
   }
 
+  /**
+   * Configures IntersectionObserver for viewport scroll tracking across key sections.
+   * Synchronizes active state with navigation bars.
+   * @private
+   */
   initScrollSpy() {
     const sections = [
       { id: "tour", selector: 'a[href="#tour"]' },
@@ -54,7 +72,6 @@ class MuseumApp {
       });
     };
 
-    // Слушатель скролла
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -71,7 +88,6 @@ class MuseumApp {
       if (el) observer.observe(el);
     });
 
-    // При клике на элемент бара
     bottomItems.forEach((btn) => {
       btn.addEventListener("click", () => {
         const targetId = btn.getAttribute("href").replace("#", "");
@@ -80,11 +96,19 @@ class MuseumApp {
     });
   }
 
+  /**
+   * Binds header metadata.
+   * @private
+   */
   renderHeaderInfo() {
     const directorName = document.getElementById("heroDirectorName");
     if (directorName) directorName.textContent = MUSEUM_INFO.director.name;
   }
 
+  /**
+   * Instantiates the exhibition hall viewport controller.
+   * @private
+   */
   initHallTour() {
     const container = document.getElementById("hallTourContainer");
     if (!container) return;
@@ -96,7 +120,10 @@ class MuseumApp {
     );
   }
 
-  // Каталог экспонатов
+  /**
+   * Renders the exhibit catalog grid with category filter and search query constraints.
+   * @private
+   */
   renderCatalog() {
     const grid = document.getElementById("exhibitsGrid");
     if (!grid) return;
@@ -169,7 +196,7 @@ class MuseumApp {
     `).join("");
 
     grid.querySelectorAll(".open-exhibit-btn, .card-visual").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
+      btn.addEventListener("click", () => {
         const id = parseInt(btn.closest(".exhibit-card").dataset.id, 10);
         const ex = this.exhibits.find((item) => item.id === id);
         if (ex) this.openExhibitModal(ex);
@@ -177,19 +204,10 @@ class MuseumApp {
     });
   }
 
-  getCategoryIcon(cat) {
-    if (cat === "telegraph") {
-      return `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="#00C2FF" stroke-width="2"><rect x="8" y="38" width="48" height="16" rx="4" fill="rgba(0,194,255,0.1)"/><path d="M16 38V22l32-8v24"/><circle cx="48" cy="18" r="6" fill="#00C2FF"/><line x1="24" y1="38" x2="24" y2="24"/></svg>`;
-    } else if (cat === "telephone") {
-      return `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="#772CE8" stroke-width="2"><rect x="18" y="24" width="28" height="32" rx="6" fill="rgba(119,44,232,0.1)"/><circle cx="25" cy="16" r="6" fill="#772CE8"/><circle cx="39" cy="16" r="6" fill="#772CE8"/><path d="M12 20h40v6H12z"/></svg>`;
-    } else if (cat === "sound") {
-      return `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="#FF5E00" stroke-width="2"><path d="M12 36l20-14v30l-20-14z" fill="rgba(255,94,0,0.1)"/><path d="M38 18c8 6 8 22 0 28"/><path d="M46 10c14 11 14 33 0 44"/><rect x="8" y="32" width="10" height="8" rx="2"/></svg>`;
-    } else {
-      return `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="#00E5FF" stroke-width="2"><path d="M32 6l22 12v28l-22 12L10 46V18L32 6z" fill="rgba(0,229,255,0.1)"/><circle cx="32" cy="32" r="8" fill="#00E5FF"/><path d="M32 14v10M32 40v10M16 23l8 5M40 36l8 5"/></svg>`;
-    }
-  }
-
-  // Модальное окно 360-осмотра экспоната
+  /**
+   * Opens modal detail dialog for a specific exhibit and loads media resources.
+   * @param {Object} exhibit Target exhibit entity.
+   */
   openExhibitModal(exhibit) {
     this.currentExhibit = exhibit;
     const modal = document.getElementById("exhibitModal");
@@ -200,14 +218,13 @@ class MuseumApp {
     document.getElementById("modalExhibitTitle").textContent = exhibit.name;
     document.getElementById("modalExhibitFullDesc").textContent = exhibit.fullDesc;
 
-    // Факты
     const factsList = document.getElementById("modalExhibitFacts");
     factsList.innerHTML = exhibit.facts.map((f) => `<li>${f}</li>`).join("");
 
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
 
-    // Управление видом: видео работы (АТС), интерактивные кадры или статичное фото (стол)
+    // Media renderer dispatch: video player, interactive frame canvas, or static photo
     const canvas = document.getElementById("viewer360Canvas");
     const videoEl = document.getElementById("modalExhibitVideo");
     const staticImg = document.getElementById("modalExhibitStaticImg");
@@ -243,7 +260,6 @@ class MuseumApp {
         });
       }
     } else {
-      // Статичное фото высокого разрешения (например, стол телеграфиста)
       if (videoEl) {
         videoEl.pause();
         videoEl.classList.add("hidden");
@@ -257,11 +273,13 @@ class MuseumApp {
       }
     }
 
-    // Сброс и настройка персонального аудиогида
     this.stopAudio();
     this.setupAudioGuide(exhibit);
   }
 
+  /**
+   * Closes exhibit modal dialog and releases active media resources.
+   */
   closeExhibitModal() {
     const modal = document.getElementById("exhibitModal");
     if (!modal) return;
@@ -277,7 +295,12 @@ class MuseumApp {
     this.stopAudio();
   }
 
-  // Персональный аудиогид для каждого экспоната (реальный mp3 без хардкода)
+  /**
+   * Initializes audio playback for the target exhibit.
+   * Calculates duration dynamically via metadata inspection.
+   * @param {Object} exhibit Target exhibit entity.
+   * @private
+   */
   setupAudioGuide(exhibit) {
     const playBtn = document.getElementById("modalAudioPlayBtn");
     const durationBadge = document.getElementById("modalAudioDuration");
@@ -291,7 +314,6 @@ class MuseumApp {
       this.currentAudio = null;
     }
 
-    // Сброс визуальных элементов до загрузки метаданных
     if (currentTimeEl) currentTimeEl.textContent = "0:00";
     if (totalTimeEl) totalTimeEl.textContent = "--:--";
     if (durationBadge) durationBadge.textContent = "--:--";
@@ -308,7 +330,6 @@ class MuseumApp {
     this.currentAudio = new Audio(exhibit.audioFile);
     this.currentAudio.preload = "metadata";
 
-    // Нативное определение длительности без хардкода
     const onMeta = () => {
       const durStr = formatTime(this.currentAudio.duration);
       if (totalTimeEl) totalTimeEl.textContent = durStr;
@@ -321,7 +342,6 @@ class MuseumApp {
       this.currentAudio.addEventListener("loadedmetadata", onMeta);
     }
 
-    // Обновление тайминга при воспроизведении
     this.currentAudio.addEventListener("timeupdate", () => {
       if (!this.currentAudio) return;
       if (currentTimeEl) {
@@ -332,7 +352,6 @@ class MuseumApp {
       }
     });
 
-    // Перемотка ползунком
     if (seekSlider) {
       seekSlider.oninput = () => {
         if (this.currentAudio && this.currentAudio.duration) {
@@ -358,6 +377,9 @@ class MuseumApp {
     this.updateAudioBtnState();
   }
 
+  /**
+   * Resumes or starts audio guide playback.
+   */
   playAudio() {
     if (!this.currentAudio) return;
     this.isPlayingAudio = true;
@@ -365,6 +387,9 @@ class MuseumApp {
     this.updateAudioBtnState();
   }
 
+  /**
+   * Pauses active audio playback.
+   */
   stopAudio() {
     this.isPlayingAudio = false;
     if (this.currentAudio) {
@@ -373,6 +398,10 @@ class MuseumApp {
     this.updateAudioBtnState();
   }
 
+  /**
+   * Synchronizes audio button state and iconography.
+   * @private
+   */
   updateAudioBtnState() {
     const playBtn = document.getElementById("modalAudioPlayBtn");
     if (!playBtn) return;
@@ -389,12 +418,15 @@ class MuseumApp {
     }
   }
 
-  // Таймлайн истории связи (1832–2026)
+  /**
+   * Renders regional communication timeline records.
+   * @private
+   */
   renderTimeline() {
     const list = document.getElementById("timelineList");
     if (!list) return;
 
-    list.innerHTML = TIMELINE.map((item, index) => `
+    list.innerHTML = TIMELINE.map((item) => `
       <div class="timeline-step">
         <div class="timeline-marker">
           <div class="marker-dot"></div>
@@ -409,7 +441,10 @@ class MuseumApp {
     `).join("");
   }
 
-  // Раздел здания на пл. Плеханова, 5
+  /**
+   * Renders building services section.
+   * @private
+   */
   renderBuildingSection() {
     const servicesGrid = document.getElementById("buildingServicesGrid");
     if (!servicesGrid) return;
@@ -427,7 +462,10 @@ class MuseumApp {
     `).join("");
   }
 
-  // Приветствие директора
+  /**
+   * Renders management greeting and portrait.
+   * @private
+   */
   renderDirectorSection() {
     const quoteEl = document.getElementById("directorQuoteText");
     const nameEl = document.getElementById("directorNameText");
@@ -440,7 +478,10 @@ class MuseumApp {
     if (titleEl) titleEl.textContent = MUSEUM_INFO.director.title;
   }
 
-  // Правила и контакты
+  /**
+   * Renders museum rules list.
+   * @private
+   */
   renderRulesAndContacts() {
     const rulesList = document.getElementById("museumRulesList");
     if (rulesList) {
@@ -448,9 +489,11 @@ class MuseumApp {
     }
   }
 
-  // Обработчики глобальных событий
+  /**
+   * Attaches global interaction event listeners.
+   * @private
+   */
   bindGlobalEvents() {
-    // Вкладки категорий в каталоге
     document.querySelectorAll(".cat-tab-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         this.selectedCategory = btn.dataset.category;
@@ -459,7 +502,6 @@ class MuseumApp {
       });
     });
 
-    // Поиск по каталогу
     const searchInput = document.getElementById("catalogSearch");
     if (searchInput) {
       searchInput.addEventListener("input", (e) => {
@@ -468,20 +510,8 @@ class MuseumApp {
       });
     }
 
-    // Закрытие модалок
     const modalClose = document.getElementById("modalCloseBtn");
     if (modalClose) modalClose.addEventListener("click", () => this.closeExhibitModal());
-
-    // Управление 360 просмотрщиком
-    const rotateToggle = document.getElementById("viewerAutoRotateBtn");
-    if (rotateToggle) {
-      rotateToggle.addEventListener("click", () => {
-        if (this.viewer360) {
-          const isRotating = this.viewer360.toggleAutoRotate();
-          rotateToggle.classList.toggle("active", isRotating);
-        }
-      });
-    }
 
     const resetBtn = document.getElementById("viewerResetBtn");
     if (resetBtn) {
@@ -504,7 +534,6 @@ class MuseumApp {
       });
     }
 
-    // Мобильное меню
     const mobileMenuBtn = document.getElementById("mobileMenuToggle");
     const mobileNav = document.getElementById("mobileNavDrawer");
     if (mobileMenuBtn && mobileNav) {
@@ -516,7 +545,6 @@ class MuseumApp {
       });
     }
 
-    // Закрытие по клавише Esc
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         this.closeExhibitModal();
@@ -524,13 +552,20 @@ class MuseumApp {
     });
   }
 
+  /**
+   * Updates category tab visual state.
+   * @private
+   */
   updateCategoryTabs() {
     document.querySelectorAll(".cat-tab-btn").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.category === this.selectedCategory);
     });
   }
 
-  // Настройка доступности (для слабовидящих)
+  /**
+   * Binds accessibility toolbar triggers.
+   * @private
+   */
   bindA11yEvents() {
     const toggleBtn = document.getElementById("a11yToggleBtn");
     if (toggleBtn) {
@@ -556,9 +591,11 @@ class MuseumApp {
     });
   }
 
-  // Обработка форм записи и отзывов строго по почте (mailto: с автозаполнением)
+  /**
+   * Binds tour booking and feedback forms to dispatch RFC 6068 mailto URIs.
+   * @private
+   */
   bindForms() {
-    // 1. Форма записи на экскурсию (отправка на referent_lp@center.rt.ru)
     const bookingForm = document.getElementById("tourBookingForm");
     if (bookingForm) {
       bookingForm.addEventListener("submit", (e) => {
@@ -585,8 +622,7 @@ class MuseumApp {
         );
 
         const mailtoUrl = `mailto:referent_lp@center.rt.ru?subject=${subject}&body=${body}`;
-        
-        this.showToast(`Открываем почтовый клиент для отправки заявки на referent_lp@center.rt.ru...`);
+        this.showToast("Открываем почтовый клиент для отправки заявки на referent_lp@center.rt.ru...");
         
         setTimeout(() => {
           window.location.href = mailtoUrl;
@@ -594,7 +630,6 @@ class MuseumApp {
       });
     }
 
-    // 2. Форма отзывов и предложений (отправка на referent_lp@center.rt.ru)
     const feedbackForm = document.getElementById("feedbackForm");
     if (feedbackForm) {
       feedbackForm.addEventListener("submit", (e) => {
@@ -617,8 +652,7 @@ ${text}
         );
 
         const mailtoUrl = `mailto:referent_lp@center.rt.ru?subject=${subject}&body=${body}`;
-        
-        this.showToast(`Открываем почтовый клиент для отправки отзыва на referent_lp@center.rt.ru...`);
+        this.showToast("Открываем почтовый клиент для отправки отзыва на referent_lp@center.rt.ru...");
         
         setTimeout(() => {
           window.location.href = mailtoUrl;
@@ -627,6 +661,10 @@ ${text}
     }
   }
 
+  /**
+   * Displays transient notification toast.
+   * @param {string} msg Notification message.
+   */
   showToast(msg) {
     let toast = document.getElementById("appToast");
     if (!toast) {
@@ -643,7 +681,6 @@ ${text}
   }
 }
 
-// Запуск приложения
 document.addEventListener("DOMContentLoaded", () => {
   window.museumApp = new MuseumApp();
 });

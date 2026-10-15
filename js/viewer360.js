@@ -1,12 +1,20 @@
-// Интерактивный просмотрщик ракурса экспонатов (~120° слева-направо)
-// Оптимизирован для мобильных устройств (touch-action: none, плавная физика скраббинга)
+/**
+ * @fileoverview Interactive object inspection controller for multi-angle frame sequences.
+ * Implements bounded linear scrubbing, pointer event tracking, inertia simulation, and hardware-accelerated canvas rendering.
+ * @module viewer360
+ */
 
 export class Exhibit360Viewer {
+  /**
+   * @param {HTMLCanvasElement} canvasElement Target HTML5 canvas element for frame rendering.
+   * @param {Object} [options] Viewer configuration options.
+   * @param {number} [options.totalFrames=24] Initial frame count for sequence scrubbing.
+   */
   constructor(canvasElement, options = {}) {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext("2d");
     this.totalFrames = options.totalFrames || 24;
-    this.currentFrame = Math.floor(this.totalFrames / 2); // начинаем с центрального ракурса
+    this.currentFrame = Math.floor(this.totalFrames / 2);
     this.images = [];
     this.isLoading = false;
     this.isDragging = false;
@@ -14,9 +22,6 @@ export class Exhibit360Viewer {
     this.lastX = 0;
     this.velocityX = 0;
     this.lastTime = 0;
-    this.isAutoRotating = false;
-    this.autoRotateSpeed = 0.35;
-    this.autoDirection = 1;
     this.zoom = 1;
     this.minZoom = 0.85;
     this.maxZoom = 2.5;
@@ -27,6 +32,9 @@ export class Exhibit360Viewer {
     this.startLoop();
   }
 
+  /**
+   * Recalculates canvas buffer dimensions based on device pixel ratio and layout dimensions.
+   */
   initCanvasSize() {
     const dpr = window.devicePixelRatio || 1;
     const parent = this.canvas.parentElement;
@@ -41,23 +49,31 @@ export class Exhibit360Viewer {
     this.displayHeight = height;
   }
 
+  /**
+   * Sets target exhibit model and triggers image buffer preloading.
+   * @param {Object} exhibit Domain exhibit entity.
+   */
   setExhibit(exhibit) {
     this.exhibitData = exhibit;
     this.zoom = 1;
     this.velocityX = 0;
-    this.isAutoRotating = false;
 
-    if (exhibit && exhibit.frames && exhibit.frames.length > 0) {
+    if (exhibit && Array.isArray(exhibit.frames) && exhibit.frames.length > 0) {
       this.totalFrames = exhibit.frames.length;
       this.currentFrame = Math.floor(this.totalFrames / 2);
       this.loadFrames(exhibit.frames);
     } else {
       this.images = [];
-      this.currentFrame = Math.floor(this.totalFrames / 2);
+      this.currentFrame = 0;
     }
     this.render();
   }
 
+  /**
+   * Asynchronously preloads frame sequence into memory.
+   * @param {string[]} frameUrls Array of frame image URI paths.
+   * @private
+   */
   loadFrames(frameUrls) {
     this.isLoading = true;
     this.totalFrames = frameUrls.length;
@@ -69,7 +85,7 @@ export class Exhibit360Viewer {
       img.src = url;
       img.onload = () => {
         loadedCount++;
-        // Первый кадр отображаем сразу
+        // Render initial central frame immediately upon arrival
         if (i === Math.floor(this.totalFrames / 2) || loadedCount === frameUrls.length) {
           this.isLoading = false;
           this.render();
@@ -82,12 +98,15 @@ export class Exhibit360Viewer {
     });
   }
 
+  /**
+   * Attaches pointer, touch, and wheel gesture handlers.
+   * @private
+   */
   bindEvents() {
     const c = this.canvas;
 
     c.addEventListener("pointerdown", (e) => {
       this.isDragging = true;
-      this.isAutoRotating = false;
       this.startX = e.clientX;
       this.lastX = e.clientX;
       this.lastTime = performance.now();
@@ -106,7 +125,6 @@ export class Exhibit360Viewer {
       this.lastX = e.clientX;
       this.lastTime = now;
 
-      // Плавная чувствительность перемещения ракурса с учётом направления свайпа
       const sensitivity = 8;
       const dir = (this.exhibitData && this.exhibitData.invertSwipe) ? -1 : 1;
       const frameDelta = (deltaX / sensitivity) * dir;
@@ -125,7 +143,6 @@ export class Exhibit360Viewer {
     c.addEventListener("pointerup", endDrag);
     c.addEventListener("pointercancel", endDrag);
 
-    // Колесико мыши для зума
     c.addEventListener("wheel", (e) => {
       e.preventDefault();
       const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
@@ -138,22 +155,27 @@ export class Exhibit360Viewer {
     });
   }
 
-  // Ограничиваем скраббинг рамками 0 ... totalFrames - 1 (без скачка по кругу)
+  /**
+   * Advances current frame index within clamped bounds [0, totalFrames - 1].
+   * @param {number} delta Step increment value.
+   */
   stepFrame(delta) {
     this.currentFrame = Math.max(0, Math.min(this.totalFrames - 1, this.currentFrame + delta));
     this.render();
   }
 
+  /**
+   * Updates rendering zoom scale factor.
+   * @param {number} val New zoom multiplier.
+   */
   setZoom(val) {
     this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, val));
     this.render();
   }
 
-  toggleAutoRotate() {
-    this.isAutoRotating = !this.isAutoRotating;
-    return this.isAutoRotating;
-  }
-
+  /**
+   * Resets viewer transform and frame index to default orientation.
+   */
   resetView() {
     this.currentFrame = Math.floor(this.totalFrames / 2);
     this.zoom = 1;
@@ -161,19 +183,25 @@ export class Exhibit360Viewer {
     this.render();
   }
 
+  /**
+   * Starts inertial animation update loop.
+   * @private
+   */
   startLoop() {
     const loop = () => {
       if (!this.isDragging && Math.abs(this.velocityX) > 0.02) {
-        // Затухание инерции скраббинга
         const dir = (this.exhibitData && this.exhibitData.invertSwipe) ? -1 : 1;
         this.stepFrame(this.velocityX * 2.2 * dir);
-        this.velocityX *= 0.88;
+        this.velocityX *= 0.88; // Viscous decay coefficient
       }
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
   }
 
+  /**
+   * Renders active frame centered within the canvas viewport.
+   */
   render() {
     const ctx = this.ctx;
     const w = this.displayWidth;
@@ -184,13 +212,11 @@ export class Exhibit360Viewer {
 
     const frameIndex = Math.round(this.currentFrame);
 
-    // Если есть реальные кадры
     if (this.images.length > 0 && this.images[frameIndex] && this.images[frameIndex].complete && this.images[frameIndex].naturalWidth > 0) {
       const img = this.images[frameIndex];
       const nw = img.naturalWidth;
       const nh = img.naturalHeight;
 
-      // Центрируем изображение строго по высоте и ширине канваса
       const scale = Math.min((w * 0.95) / nw, (h * 0.95) / nh) * this.zoom;
       const dw = nw * scale;
       const dh = nh * scale;
@@ -201,7 +227,6 @@ export class Exhibit360Viewer {
       ctx.drawImage(img, dx, dy, dw, dh);
       ctx.restore();
     } else {
-      // Загрузка
       ctx.fillStyle = "#060B17";
       ctx.fillRect(0, 0, w, h);
       ctx.fillStyle = "#94A3B8";

@@ -421,7 +421,7 @@ body.a11y-active[data-a11y-theme="black-yellow"] {
   color: #FFE600 !important;
 }
 
-html.a11y-active[data-a11y-theme="black-yellow"] *:not(.a11y-toolbar *):not(.real-scene-img):not(img):not(video) {
+html.a11y-active[data-a11y-theme="black-yellow"] *:not(.a11y-toolbar *):not(canvas):not(img):not(video):not(.scene-image-wrapper):not(.hall-viewport):not(.panorama-canvas-wrap):not(.viewer-canvas-wrap):not(.modal-viewer-col):not(.card-visual):not(.real-scene-img):not(.card-cover-img):not(.building-real-img):not(.director-real-photo):not(.modal-video-player):not(.modal-static-img) {
   border-color: #FFE600 !important;
   color: #FFE600 !important;
   background-color: #000000 !important;
@@ -435,7 +435,7 @@ body.a11y-active[data-a11y-theme="white-black"] {
   color: #000000 !important;
 }
 
-html.a11y-active[data-a11y-theme="white-black"] *:not(.a11y-toolbar *):not(.real-scene-img):not(img):not(video) {
+html.a11y-active[data-a11y-theme="white-black"] *:not(.a11y-toolbar *):not(canvas):not(img):not(video):not(.scene-image-wrapper):not(.hall-viewport):not(.panorama-canvas-wrap):not(.viewer-canvas-wrap):not(.modal-viewer-col):not(.card-visual):not(.real-scene-img):not(.card-cover-img):not(.building-real-img):not(.director-real-photo):not(.modal-video-player):not(.modal-static-img) {
   border-color: #000000 !important;
   color: #000000 !important;
   background-color: #FFFFFF !important;
@@ -449,7 +449,7 @@ body.a11y-active[data-a11y-theme="high-contrast-dark"] {
   color: #FFFFFF !important;
 }
 
-html.a11y-active[data-a11y-theme="high-contrast-dark"] *:not(.a11y-toolbar *):not(.real-scene-img):not(img):not(video) {
+html.a11y-active[data-a11y-theme="high-contrast-dark"] *:not(.a11y-toolbar *):not(canvas):not(img):not(video):not(.scene-image-wrapper):not(.hall-viewport):not(.panorama-canvas-wrap):not(.viewer-canvas-wrap):not(.modal-viewer-col):not(.card-visual):not(.real-scene-img):not(.card-cover-img):not(.building-real-img):not(.director-real-photo):not(.modal-video-player):not(.modal-static-img) {
   border-color: #FFFFFF !important;
   color: #FFFFFF !important;
   background-color: #000000 !important;
@@ -461,6 +461,23 @@ html.a11y-active[data-a11y-theme="high-contrast-dark"] .hotspot-core {
   background-color: #FFFFFF !important;
   color: #000000 !important;
   font-weight: 900 !important;
+}
+
+/* Гарантия видимости медиа-контента в спец-темах */
+html.a11y-active canvas,
+html.a11y-active img,
+html.a11y-active video,
+html.a11y-active .real-scene-img,
+html.a11y-active .panorama-canvas,
+html.a11y-active .viewer-360-canvas,
+html.a11y-active .scene-image-wrapper,
+html.a11y-active .hall-viewport,
+html.a11y-active .panorama-canvas-wrap,
+html.a11y-active .viewer-canvas-wrap,
+html.a11y-active .modal-viewer-col {
+  background-color: transparent !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* ==========================================================================
@@ -638,6 +655,59 @@ section {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.calib-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
+  color: #FFFFFF;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.calib-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.calib-tool-btn.danger {
+  color: #FF8080;
+}
+
+.calib-tool-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #EF4444;
+}
+
+.spot-delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #EF4444;
+  border: 2px solid #FFFFFF;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  transition: transform 0.15s ease;
+}
+
+.spot-delete-btn:hover {
+  transform: scale(1.2);
+  background: #DC2626;
 }
 
 .mode-calib-btn {

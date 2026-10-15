@@ -1,5 +1,8 @@
-// База данных цифрового музея связи Липецкого филиала ПАО «Ростелеком»
-// Подготовлено на основе официального ТЗ и архивных материалов музея
+/**
+ * @fileoverview Domain data repository for the Rostelecom Communication Museum digital branch.
+ * Contains archival exhibition metadata, chronological records, facility profiles, and contact registries.
+ * @module data
+ */
 
 export const MUSEUM_INFO = {
   name: "Музей связи Липецкой области",
@@ -62,7 +65,10 @@ export const MUSEUM_INFO = {
   }
 };
 
-// Каталог 10 ключевых экспонатов по ТЗ
+/**
+ * Exhibit registry containing digital media references, historical summaries, and interaction configurations.
+ * @type {Array<Object>}
+ */
 export const EXHIBITS = [
   {
     id: 1,
@@ -89,7 +95,7 @@ export const EXHIBITS = [
     era: "1860-е – 1960-е гг.",
     category: "telegraph",
     cover: "assets/exhibits/cover_2.webp",
-    frames: Array.from({ length: 24 }, (_, i) => `assets/exhibits/item_2/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    frames: Array.from({ length: 48 }, (_, i) => `assets/exhibits/item_2/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: false,
     audioFile: "assets/audio/exhibit_2.mp3",
@@ -108,8 +114,8 @@ export const EXHIBITS = [
     era: "Начало XX века (1908–1911 гг.)",
     category: "telephone",
     cover: "assets/exhibits/cover_3.webp",
-    // 23 кадра (убран последний кадр)
-    frames: Array.from({ length: 23 }, (_, i) => `assets/exhibits/item_3/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    // 47 кадров (убран последний кадр)
+    frames: Array.from({ length: 47 }, (_, i) => `assets/exhibits/item_3/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: true,
     audioFile: "assets/audio/exhibit_3.mp3",
@@ -147,7 +153,7 @@ export const EXHIBITS = [
     era: "1910-е гг.",
     category: "sound",
     cover: "assets/exhibits/cover_5.webp",
-    frames: Array.from({ length: 24 }, (_, i) => `assets/exhibits/item_5/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    frames: Array.from({ length: 48 }, (_, i) => `assets/exhibits/item_5/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: false,
     audioFile: "assets/audio/exhibit_5.mp3",
@@ -166,7 +172,7 @@ export const EXHIBITS = [
     era: "1940-е гг. (Великая Отечественная война)",
     category: "sound",
     cover: "assets/exhibits/cover_6.webp",
-    frames: Array.from({ length: 24 }, (_, i) => `assets/exhibits/item_6/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    frames: Array.from({ length: 48 }, (_, i) => `assets/exhibits/item_6/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: false,
     audioFile: "assets/audio/exhibit_6.mp3",
@@ -185,7 +191,7 @@ export const EXHIBITS = [
     era: "1960–1980-е гг.",
     category: "sound",
     cover: "assets/exhibits/cover_7.webp",
-    frames: Array.from({ length: 24 }, (_, i) => `assets/exhibits/item_7/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    frames: Array.from({ length: 48 }, (_, i) => `assets/exhibits/item_7/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: false,
     audioFile: "assets/audio/exhibit_7.mp3",
@@ -204,7 +210,7 @@ export const EXHIBITS = [
     era: "Современность (Книга рекордов России)",
     category: "modern",
     cover: "assets/exhibits/cover_8.webp",
-    frames: Array.from({ length: 24 }, (_, i) => `assets/exhibits/item_8/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    frames: Array.from({ length: 48 }, (_, i) => `assets/exhibits/item_8/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: true, // инвертирован свайп
     audioFile: "assets/audio/exhibit_8.mp3",
@@ -223,7 +229,7 @@ export const EXHIBITS = [
     era: "Конец 1990-х – начало 2000-х гг.",
     category: "digital",
     cover: "assets/exhibits/cover_9.webp",
-    frames: Array.from({ length: 24 }, (_, i) => `assets/exhibits/item_9/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    frames: Array.from({ length: 48 }, (_, i) => `assets/exhibits/item_9/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: false,
     audioFile: "assets/audio/exhibit_9.mp3",
@@ -242,7 +248,7 @@ export const EXHIBITS = [
     era: "XXI век (актуальная технология)",
     category: "digital",
     cover: "assets/exhibits/cover_10.webp",
-    frames: Array.from({ length: 24 }, (_, i) => `assets/exhibits/item_10/frame_${String(i + 1).padStart(2, "0")}.webp`),
+    frames: Array.from({ length: 48 }, (_, i) => `assets/exhibits/item_10/frame_${String(i + 1).padStart(2, "0")}.webp`),
     has360: true,
     invertSwipe: true, // инвертирован свайп
     audioFile: "assets/audio/exhibit_10.mp3",
@@ -256,7 +262,10 @@ export const EXHIBITS = [
   }
 ];
 
-// Хронология связи Липецкого края (1830 - 2026)
+/**
+ * Chronological records of telecommunication infrastructure milestones in Lipetsk region (1832–2026).
+ * @type {Array<{year: string, title: string, desc: string}>}
+ */
 export const TIMELINE = [
   {
     year: "1832",
