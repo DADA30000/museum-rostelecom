@@ -1,5 +1,5 @@
 // Модуль виртуального зала на основе РЕАЛЬНЫХ материалов музея связи Липецка
-// 2 режима: 3 ракурса зала с реальными фото и Панорама музея с 2D-инерцией и векторными HTML-маркерами
+// 2 режима: 3 ракурса зала и Панорама музея с 2D-навигацией, инерцией и визуальной калибровкой меток
 
 export class HallViewController {
   constructor(containerElement, exhibits, onSelectExhibit) {
@@ -8,8 +8,12 @@ export class HallViewController {
     this.onSelectExhibit = onSelectExhibit;
     this.currentMode = "photos"; // 'photos' | 'panorama'
     this.currentPhotoIndex = 0;
+    this.isCalibrating = false; // режим перетаскивания меток пользователем
 
-    // Реальные ракурсы музея связи (пл. Плеханова, 5)
+    // Загружаем сохраненные пользователем калибровки из localStorage, если есть
+    this.customCoords = this.loadCustomCoords();
+
+    // Базовые координаты 3 ракурсов
     this.photoScenes = [
       {
         id: "entrance",
@@ -49,7 +53,58 @@ export class HallViewController {
       }
     ];
 
+    // Точные координаты экспонатов на бесшовной панораме (0.0 ... 1.0 по ширине полотна)
+    this.panoSpots = [
+      { exhibitId: 1, normX: 0.12, normY: 0.65 },
+      { exhibitId: 3, normX: 0.24, normY: 0.58 },
+      { exhibitId: 2, normX: 0.32, normY: 0.62 },
+      { exhibitId: 4, normX: 0.43, normY: 0.68 },
+      { exhibitId: 8, normX: 0.63, normY: 0.48 },
+      { exhibitId: 5, normX: 0.71, normY: 0.46 },
+      { exhibitId: 10, normX: 0.78, normY: 0.68 },
+      { exhibitId: 4, normX: 0.83, normY: 0.52 },
+      { exhibitId: 6, normX: 0.88, normY: 0.36 },
+      { exhibitId: 7, normX: 0.92, normY: 0.56 },
+      { exhibitId: 9, normX: 0.79, normY: 0.72 }
+    ];
+
+    this.applyCustomCoords();
     this.render();
+  }
+
+  loadCustomCoords() {
+    try {
+      const s = localStorage.getItem("rt_museum_hotspot_coords");
+      return s ? JSON.parse(s) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  saveCustomCoords() {
+    localStorage.setItem("rt_museum_hotspot_coords", JSON.stringify({
+      scenes: this.photoScenes.map(s => ({ id: s.id, spots: s.spots })),
+      pano: this.panoSpots
+    }));
+  }
+
+  applyCustomCoords() {
+    if (!this.customCoords) return;
+    if (this.customCoords.scenes) {
+      this.customCoords.scenes.forEach(cs => {
+        const sc = this.photoScenes.find(s => s.id === cs.id);
+        if (sc && cs.spots) sc.spots = cs.spots;
+      });
+    }
+    if (this.customCoords.pano) {
+      this.panoSpots = this.customCoords.pano;
+    }
+  }
+
+  resetCustomCoords() {
+    localStorage.removeItem("rt_museum_hotspot_coords");
+    this.customCoords = null;
+    location.reload();
   }
 
   setMode(mode) {
@@ -62,10 +117,15 @@ export class HallViewController {
     this.render();
   }
 
+  toggleCalibration() {
+    this.isCalibrating = !this.isCalibrating;
+    this.render();
+  }
+
   render() {
     this.container.innerHTML = "";
 
-    // Шапка переключателей режимов зала (только Ракурсы и Панорама)
+    // Шапка переключателей режимов зала
     const header = document.createElement("div");
     header.className = "hall-modes-bar";
     header.innerHTML = `
@@ -79,11 +139,23 @@ export class HallViewController {
           Панорама музея
         </button>
       </div>
+
+      <div class="modes-tools-group">
+        <button class="mode-calib-btn ${this.isCalibrating ? 'active' : ''}" id="toggleCalibBtn" title="Перетаскивание меток прямо по экрану">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 17"/></svg>
+          <span>${this.isCalibrating ? 'Готово (сохранить)' : 'Настроить метки'}</span>
+        </button>
+      </div>
     `;
 
     header.querySelectorAll(".mode-btn").forEach((btn) => {
       btn.addEventListener("click", () => this.setMode(btn.dataset.mode));
     });
+
+    const calibBtn = header.querySelector("#toggleCalibBtn");
+    if (calibBtn) {
+      calibBtn.addEventListener("click", () => this.toggleCalibration());
+    }
 
     this.container.appendChild(header);
 
@@ -106,11 +178,17 @@ export class HallViewController {
 
     viewport.innerHTML = `
       <div class="photos-view-container">
-        <div class="scene-image-wrapper">
+        <div class="scene-image-wrapper" id="sceneImageWrapper">
           <img src="${scene.image}" alt="${scene.title}" class="real-scene-img" id="sceneRealImg" loading="eager">
           
           <!-- Хотспоты экспонатов -->
           <div class="hotspots-layer" id="hotspotsLayer"></div>
+
+          ${this.isCalibrating ? `
+            <div class="calib-banner">
+              💡 Режим калибровки: перетащите метки мышкой или пальцем в нужную точку на фото!
+            </div>
+          ` : ''}
 
           <!-- Навигация между 3 ракурсами -->
           <div class="scene-subnav">
@@ -138,7 +216,6 @@ export class HallViewController {
       </div>
     `;
 
-    // Переключение между 3 ракурсами
     viewport.querySelectorAll(".scene-chip").forEach(btn => {
       btn.addEventListener("click", () => this.setPhotoIndex(parseInt(btn.dataset.idx, 10)));
     });
@@ -151,50 +228,82 @@ export class HallViewController {
       });
     });
 
-    // Расстановка хотспотов на реальном фото
     const layer = viewport.querySelector("#hotspotsLayer");
-    this.renderHotspotsForScene(layer, scene);
+    const wrapper = viewport.querySelector("#sceneImageWrapper");
+    this.renderHotspotsForScene(layer, wrapper, scene);
   }
 
-  renderHotspotsForScene(layer, scene) {
+  renderHotspotsForScene(layer, wrapper, scene) {
     layer.innerHTML = "";
     scene.spots.forEach((spotData) => {
       const ex = this.exhibits.find(e => e.id === spotData.exhibitId);
       if (!ex) return;
 
       const spot = document.createElement("div");
-      spot.className = "exhibit-hotspot";
+      spot.className = `exhibit-hotspot ${this.isCalibrating ? 'calibrating' : ''}`;
       spot.style.left = `${spotData.x}%`;
       spot.style.top = `${spotData.y}%`;
       spot.setAttribute("role", "button");
-      spot.setAttribute("aria-label", `Экспонат ${ex.name}`);
 
       spot.innerHTML = `
         <div class="hotspot-core">
           <span>№${ex.number}</span>
         </div>
-        <div class="hotspot-card">
-          <div class="card-tag">${ex.era}</div>
-          <div class="card-name">${ex.name}</div>
-          <div class="card-action">
-            <span>Осмотр экспоната</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        ${!this.isCalibrating ? `
+          <div class="hotspot-card">
+            <div class="card-tag">${ex.era}</div>
+            <div class="card-name">${ex.name}</div>
+            <div class="card-action">
+              <span>Осмотр экспоната</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
           </div>
-        </div>
+        ` : ''}
       `;
 
-      spot.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.onSelectExhibit(ex);
-      });
+      if (this.isCalibrating) {
+        // Перетаскивание метки прямо по экрану в режиме калибровки
+        let isDraggingSpot = false;
+        spot.onpointerdown = (e) => {
+          isDraggingSpot = true;
+          spot.setPointerCapture(e.pointerId);
+          e.stopPropagation();
+        };
+        spot.onpointermove = (e) => {
+          if (!isDraggingSpot) return;
+          const rect = wrapper.getBoundingClientRect();
+          const newX = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+          const newY = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+          spotData.x = Math.max(2, Math.min(98, newX));
+          spotData.y = Math.max(2, Math.min(98, newY));
+          spot.style.left = `${spotData.x}%`;
+          spot.style.top = `${spotData.y}%`;
+        };
+        const stopDrag = (e) => {
+          if (isDraggingSpot) {
+            isDraggingSpot = false;
+            try { spot.releasePointerCapture(e.pointerId); } catch (_) {}
+            this.saveCustomCoords();
+            console.log(`Новые координаты для ${scene.id}:`, JSON.stringify(scene.spots));
+          }
+        };
+        spot.onpointerup = stopDrag;
+        spot.onpointercancel = stopDrag;
+      } else {
+        spot.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.onSelectExhibit(ex);
+        });
+      }
+
       layer.appendChild(spot);
     });
   }
 
-  // Режим панорамы зала: умеренный зум для чёткости + HTML-маркеры поверх полотна
+  // Режим панорамы зала с точным позиционированием и калибровкой
   renderPanoramaMode(viewport) {
     viewport.innerHTML = `
-      <div class="panorama-canvas-wrap">
+      <div class="panorama-canvas-wrap" id="panoWrap">
         <canvas id="panoramaCanvas" class="panorama-canvas"></canvas>
         <div class="hotspots-layer" id="panoHotspotsLayer"></div>
         <div class="pano-controls-overlay">
@@ -219,30 +328,75 @@ export class HallViewController {
     let velocityY = 0;
     let lastTime = 0;
 
-    // Создаём HTML-элементы для экспонатов на панораме
-    const markerElements = this.exhibits.map((ex, i) => {
+    // Создаём HTML-метки для экспонатов на панораме
+    const markerElements = this.panoSpots.map((spotData) => {
+      const ex = this.exhibits.find(e => e.id === spotData.exhibitId);
+      if (!ex) return null;
+
       const spot = document.createElement("div");
-      spot.className = "exhibit-hotspot pano-dom-hotspot";
+      spot.className = `exhibit-hotspot pano-dom-hotspot ${this.isCalibrating ? 'calibrating' : ''}`;
       spot.innerHTML = `
         <div class="hotspot-core">
           <span>№${ex.number}</span>
         </div>
-        <div class="hotspot-card">
-          <div class="card-tag">${ex.era}</div>
-          <div class="card-name">${ex.name}</div>
-          <div class="card-action">
-            <span>Осмотр экспоната</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        ${!this.isCalibrating ? `
+          <div class="hotspot-card">
+            <div class="card-tag">${ex.era}</div>
+            <div class="card-name">${ex.name}</div>
+            <div class="card-action">
+              <span>Осмотр экспоната</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
           </div>
-        </div>
+        ` : ''}
       `;
-      spot.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.onSelectExhibit(ex);
-      });
+
+      if (this.isCalibrating) {
+        let isDraggingSpot = false;
+        spot.onpointerdown = (e) => {
+          isDraggingSpot = true;
+          spot.setPointerCapture(e.pointerId);
+          e.stopPropagation();
+        };
+        spot.onpointermove = (e) => {
+          if (!isDraggingSpot) return;
+          const rect = canvas.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const clickY = e.clientY - rect.top;
+
+          const ph = panoImg.naturalHeight;
+          const scale = (canvas.height * 1.08) / ph;
+          const scaledWidth = panoImg.naturalWidth * scale;
+          const scaledHeight = ph * scale;
+
+          let absoluteX = (clickX + scrollX) % scaledWidth;
+          if (absoluteX < 0) absoluteX += scaledWidth;
+
+          spotData.normX = +(absoluteX / scaledWidth).toFixed(3);
+          spotData.normY = +((clickY - scrollY) / scaledHeight).toFixed(3);
+
+          draw();
+        };
+        const stopDrag = (e) => {
+          if (isDraggingSpot) {
+            isDraggingSpot = false;
+            try { spot.releasePointerCapture(e.pointerId); } catch (_) {}
+            this.saveCustomCoords();
+            console.log("Новые координаты панорамы:", JSON.stringify(this.panoSpots));
+          }
+        };
+        spot.onpointerup = stopDrag;
+        spot.onpointercancel = stopDrag;
+      } else {
+        spot.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.onSelectExhibit(ex);
+        });
+      }
+
       hotspotsLayer.appendChild(spot);
-      return { el: spot, ex, index: i };
-    });
+      return { el: spot, spotData, ex };
+    }).filter(Boolean);
 
     const panoImg = new Image();
     panoImg.src = "assets/img/hall_panorama.webp";
@@ -251,7 +405,6 @@ export class HallViewController {
       const h = canvas.height;
       if (!panoImg.complete || !h) return;
       const ph = panoImg.naturalHeight;
-      // Умеренный зум 1.08 для максимальной чёткости без растягивания
       const scale = (h * 1.08) / ph;
       const scaledHeight = ph * scale;
       const minY = -(scaledHeight - h);
@@ -293,14 +446,13 @@ export class HallViewController {
         }
 
         // Обновляем позиции векторных HTML-маркеров
-        markerElements.forEach(({ el, index }) => {
-          const itemNormalizedX = (index + 0.5) / this.exhibits.length;
-          const absoluteX = itemNormalizedX * scaledWidth;
+        markerElements.forEach(({ el, spotData }) => {
+          const absoluteX = spotData.normX * scaledWidth;
           let screenX = (absoluteX - scrollX) % scaledWidth;
           if (screenX < 0) screenX += scaledWidth;
 
           if (screenX >= -40 && screenX <= w + 40) {
-            const screenY = scrollY + scaledHeight * 0.62;
+            const screenY = scrollY + scaledHeight * (spotData.normY || 0.6);
             el.style.display = "block";
             el.style.left = `${screenX}px`;
             el.style.top = `${screenY}px`;

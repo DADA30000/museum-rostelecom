@@ -6,14 +6,11 @@ export class AccessibilityManager {
     this.isActive = false;
     this.fontSize = "normal"; // 'normal' | 'large' | 'xlarge'
     this.contrastTheme = "black-yellow"; // 'black-yellow' | 'white-black' | 'high-contrast-dark'
-    this.synth = window.speechSynthesis || null;
-    this.isSpeaking = false;
 
     this.init();
   }
 
   init() {
-    // Восстановление настроек из localStorage
     const saved = localStorage.getItem("rt_museum_a11y");
     if (saved) {
       try {
@@ -55,19 +52,28 @@ export class AccessibilityManager {
 
   applySettings() {
     const root = document.documentElement;
-    const body = document.body;
 
     if (this.isActive) {
-      body.classList.add("a11y-active");
-      body.setAttribute("data-a11y-font", this.fontSize);
-      body.setAttribute("data-a11y-theme", this.contrastTheme);
+      root.classList.add("a11y-active");
+      root.setAttribute("data-a11y-font", this.fontSize);
+      root.setAttribute("data-a11y-theme", this.contrastTheme);
+
+      // Реальное увеличение базового шрифта страницы
+      if (this.fontSize === "large") {
+        root.style.fontSize = "20px";
+      } else if (this.fontSize === "xlarge") {
+        root.style.fontSize = "24px";
+      } else {
+        root.style.fontSize = "16px";
+      }
     } else {
-      body.classList.remove("a11y-active");
-      body.removeAttribute("data-a11y-font");
-      body.removeAttribute("data-a11y-theme");
+      root.classList.remove("a11y-active");
+      root.removeAttribute("data-a11y-font");
+      root.removeAttribute("data-a11y-theme");
+      root.style.fontSize = "";
     }
 
-    // Обновляем состояние кнопки в UI
+    // Обновляем состояние кнопки в шапке
     const toggleBtn = document.getElementById("a11yToggleBtn");
     if (toggleBtn) {
       toggleBtn.classList.toggle("active", this.isActive);
@@ -78,39 +84,14 @@ export class AccessibilityManager {
     if (panel) {
       panel.classList.toggle("hidden", !this.isActive);
     }
-  }
 
-  // Голосовое чтение текста для незрячих и слабовидящих
-  speakText(text, onEnd) {
-    if (!this.synth) {
-      alert("Синтез речи не поддерживается вашим браузером");
-      return;
-    }
+    // Обновляем активные кнопки внутри панели
+    document.querySelectorAll("[data-a11y-set-font]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.a11ySetFont === this.fontSize);
+    });
 
-    this.stopSpeaking();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ru-RU";
-    utterance.rate = 0.95; // комфортный темп
-
-    utterance.onend = () => {
-      this.isSpeaking = false;
-      if (onEnd) onEnd();
-    };
-
-    utterance.onerror = () => {
-      this.isSpeaking = false;
-      if (onEnd) onEnd();
-    };
-
-    this.isSpeaking = true;
-    this.synth.speak(utterance);
-  }
-
-  stopSpeaking() {
-    if (this.synth) {
-      this.synth.cancel();
-    }
-    this.isSpeaking = false;
+    document.querySelectorAll("[data-a11y-set-theme]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.a11ySetTheme === this.contrastTheme);
+    });
   }
 }

@@ -402,40 +402,65 @@ h1, h2, h3, h4 {
 }
 
 /* Стили активного режима слабовидящих */
+html.a11y-active,
 body.a11y-active {
-  font-family: Arial, sans-serif !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1.8 !important;
 }
 
-body.a11y-active[data-a11y-font="large"] {
-  --fs-root: 19px;
+html.a11y-active a,
+body.a11y-active a {
+  text-decoration: underline !important;
 }
 
-body.a11y-active[data-a11y-font="xlarge"] {
-  --fs-root: 23px;
-}
-
+/* 1. Чёрно-жёлтая тема (ГОСТ Р 52872) */
+html.a11y-active[data-a11y-theme="black-yellow"],
 body.a11y-active[data-a11y-theme="black-yellow"] {
   background: #000000 !important;
   color: #FFE600 !important;
 }
 
-body.a11y-active[data-a11y-theme="black-yellow"] * {
+html.a11y-active[data-a11y-theme="black-yellow"] *:not(.a11y-toolbar *):not(.real-scene-img):not(img):not(video) {
   border-color: #FFE600 !important;
   color: #FFE600 !important;
   background-color: #000000 !important;
   box-shadow: none !important;
 }
 
+/* 2. Бело-чёрная тема */
+html.a11y-active[data-a11y-theme="white-black"],
 body.a11y-active[data-a11y-theme="white-black"] {
   background: #FFFFFF !important;
   color: #000000 !important;
 }
 
-body.a11y-active[data-a11y-theme="white-black"] * {
+html.a11y-active[data-a11y-theme="white-black"] *:not(.a11y-toolbar *):not(.real-scene-img):not(img):not(video) {
   border-color: #000000 !important;
   color: #000000 !important;
   background-color: #FFFFFF !important;
   box-shadow: none !important;
+}
+
+/* 3. Контрастная тёмная тема */
+html.a11y-active[data-a11y-theme="high-contrast-dark"],
+body.a11y-active[data-a11y-theme="high-contrast-dark"] {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+html.a11y-active[data-a11y-theme="high-contrast-dark"] *:not(.a11y-toolbar *):not(.real-scene-img):not(img):not(video) {
+  border-color: #FFFFFF !important;
+  color: #FFFFFF !important;
+  background-color: #000000 !important;
+  box-shadow: none !important;
+}
+
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .btn-primary,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .hotspot-core {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
 }
 
 /* ==========================================================================
@@ -607,6 +632,68 @@ section {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.modes-tools-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-calib-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mode-calib-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+.mode-calib-btn.active {
+  background: var(--rt-orange);
+  color: #FFFFFF;
+  border-color: #FFA366;
+}
+
+.calib-banner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 94, 0, 0.95);
+  color: #FFFFFF;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.exhibit-hotspot.calibrating {
+  cursor: grab !important;
+  z-index: 50 !important;
+}
+
+.exhibit-hotspot.calibrating:active {
+  cursor: grabbing !important;
+}
+
+.exhibit-hotspot.calibrating .hotspot-core {
+  outline: 3px dashed #FFFFFF;
+  transform: scale(1.1);
 }
 
 .mode-btn {
