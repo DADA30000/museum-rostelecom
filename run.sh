@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 PORT="${1:-8900}"
-echo "==========================================================="
-echo " Запуск Цифрового Музея связи ПАО «Ростелеком»"
-echo " Адрес: http://0.0.0.0:$PORT"
-echo " Для остановки нажмите Ctrl+C"
-echo "==========================================================="
-python3 -m http.server "$PORT" --bind 0.0.0.0
+chmod +x server.py
+exec python3 server.py "$PORT"

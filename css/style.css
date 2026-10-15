@@ -430,8 +430,42 @@ body.a11y-active[data-a11y-theme="black-yellow"] {
   color: #FFE600 !important;
 }
 
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-toolbar {
+  background: #000000 !important;
+  border-bottom: 2px solid #FFE600 !important;
+}
+
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-label {
+  color: #FFE600 !important;
+}
+
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-btn {
+  background: #000000 !important;
+  color: #FFE600 !important;
+  border: 1.5px solid #FFE600 !important;
+}
+
+/* Строго чёрный контрастный текст на активных жёлтых кнопках */
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-btn.active,
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-btn:hover,
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-toggle-btn.active,
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-toggle-btn:hover,
+html.a11y-active[data-a11y-theme="black-yellow"] .btn-primary,
+html.a11y-active[data-a11y-theme="black-yellow"] .hotspot-core {
+  background: #FFE600 !important;
+  background-color: #FFE600 !important;
+  color: #000000 !important;
+  border-color: #FFE600 !important;
+  font-weight: 800 !important;
+}
+
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-btn.active *,
+html.a11y-active[data-a11y-theme="black-yellow"] .a11y-toggle-btn.active * {
+  color: #000000 !important;
+}
+
 html.a11y-active[data-a11y-theme="black-yellow"] p,
-html.a11y-active[data-a11y-theme="black-yellow"] span,
+html.a11y-active[data-a11y-theme="black-yellow"] span:not(.a11y-btn.active *):not(.a11y-toggle-btn.active *):not(.hotspot-core *),
 html.a11y-active[data-a11y-theme="black-yellow"] h1,
 html.a11y-active[data-a11y-theme="black-yellow"] h2,
 html.a11y-active[data-a11y-theme="black-yellow"] h3,
@@ -440,7 +474,7 @@ html.a11y-active[data-a11y-theme="black-yellow"] a,
 html.a11y-active[data-a11y-theme="black-yellow"] label,
 html.a11y-active[data-a11y-theme="black-yellow"] li,
 html.a11y-active[data-a11y-theme="black-yellow"] strong,
-html.a11y-active[data-a11y-theme="black-yellow"] button,
+html.a11y-active[data-a11y-theme="black-yellow"] button:not(.a11y-btn.active):not(.a11y-toggle-btn.active):not(.btn-primary),
 html.a11y-active[data-a11y-theme="black-yellow"] input,
 html.a11y-active[data-a11y-theme="black-yellow"] select,
 html.a11y-active[data-a11y-theme="black-yellow"] textarea {
@@ -491,8 +525,41 @@ body.a11y-active[data-a11y-theme="white-black"] {
   color: #000000 !important;
 }
 
+html.a11y-active[data-a11y-theme="white-black"] .a11y-toolbar {
+  background: #FFFFFF !important;
+  border-bottom: 2px solid #000000 !important;
+}
+
+html.a11y-active[data-a11y-theme="white-black"] .a11y-label {
+  color: #000000 !important;
+}
+
+html.a11y-active[data-a11y-theme="white-black"] .a11y-btn {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+}
+
+html.a11y-active[data-a11y-theme="white-black"] .a11y-btn.active,
+html.a11y-active[data-a11y-theme="white-black"] .a11y-btn:hover,
+html.a11y-active[data-a11y-theme="white-black"] .a11y-toggle-btn.active,
+html.a11y-active[data-a11y-theme="white-black"] .a11y-toggle-btn:hover,
+html.a11y-active[data-a11y-theme="white-black"] .btn-primary,
+html.a11y-active[data-a11y-theme="white-black"] .hotspot-core {
+  background: #000000 !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border-color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html.a11y-active[data-a11y-theme="white-black"] .a11y-btn.active *,
+html.a11y-active[data-a11y-theme="white-black"] .a11y-toggle-btn.active * {
+  color: #FFFFFF !important;
+}
+
 html.a11y-active[data-a11y-theme="white-black"] p,
-html.a11y-active[data-a11y-theme="white-black"] span,
+html.a11y-active[data-a11y-theme="white-black"] span:not(.a11y-btn.active *):not(.a11y-toggle-btn.active *):not(.hotspot-core *),
 html.a11y-active[data-a11y-theme="white-black"] h1,
 html.a11y-active[data-a11y-theme="white-black"] h2,
 html.a11y-active[data-a11y-theme="white-black"] h3,
@@ -501,7 +568,7 @@ html.a11y-active[data-a11y-theme="white-black"] a,
 html.a11y-active[data-a11y-theme="white-black"] label,
 html.a11y-active[data-a11y-theme="white-black"] li,
 html.a11y-active[data-a11y-theme="white-black"] strong,
-html.a11y-active[data-a11y-theme="white-black"] button,
+html.a11y-active[data-a11y-theme="white-black"] button:not(.a11y-btn.active):not(.a11y-toggle-btn.active):not(.btn-primary),
 html.a11y-active[data-a11y-theme="white-black"] input,
 html.a11y-active[data-a11y-theme="white-black"] select,
 html.a11y-active[data-a11y-theme="white-black"] textarea {
@@ -552,8 +619,41 @@ body.a11y-active[data-a11y-theme="high-contrast-dark"] {
   color: #FFFFFF !important;
 }
 
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-toolbar {
+  background: #000000 !important;
+  border-bottom: 2px solid #FFFFFF !important;
+}
+
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-label {
+  color: #FFFFFF !important;
+}
+
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-btn {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid #FFFFFF !important;
+}
+
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-btn.active,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-btn:hover,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-toggle-btn.active,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-toggle-btn:hover,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .btn-primary,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .hotspot-core {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-btn.active *,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] .a11y-toggle-btn.active * {
+  color: #000000 !important;
+}
+
 html.a11y-active[data-a11y-theme="high-contrast-dark"] p,
-html.a11y-active[data-a11y-theme="high-contrast-dark"] span,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] span:not(.a11y-btn.active *):not(.a11y-toggle-btn.active *):not(.hotspot-core *),
 html.a11y-active[data-a11y-theme="high-contrast-dark"] h1,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] h2,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] h3,
@@ -562,7 +662,7 @@ html.a11y-active[data-a11y-theme="high-contrast-dark"] a,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] label,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] li,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] strong,
-html.a11y-active[data-a11y-theme="high-contrast-dark"] button,
+html.a11y-active[data-a11y-theme="high-contrast-dark"] button:not(.a11y-btn.active):not(.a11y-toggle-btn.active):not(.btn-primary),
 html.a11y-active[data-a11y-theme="high-contrast-dark"] input,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] select,
 html.a11y-active[data-a11y-theme="high-contrast-dark"] textarea {

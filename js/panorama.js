@@ -88,8 +88,25 @@ export class HallViewController {
   loadCustomCoords() {
     try {
       const s = localStorage.getItem("rt_museum_hotspot_coords");
-      if (!s) return;
-      const parsed = JSON.parse(s);
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.scenes) {
+          parsed.scenes.forEach((cs) => {
+            const sc = this.photoScenes.find((s) => s.id === cs.id);
+            if (sc && Array.isArray(cs.spots)) sc.spots = cs.spots;
+          });
+        }
+        if (Array.isArray(parsed.pano)) {
+          this.panoSpots = parsed.pano;
+        }
+        // Автоматически синхронизируем с сервером при загрузке
+        this.saveCustomCoords();
+        return;
+      }
+    } catch (_) {}
+
+    // Попытка загрузить сохраненную на сервере конфигурацию
+    fetch("js/saved_coords.json").then((r) => r.json()).then((parsed) => {
       if (parsed.scenes) {
         parsed.scenes.forEach((cs) => {
           const sc = this.photoScenes.find((s) => s.id === cs.id);
@@ -99,17 +116,30 @@ export class HallViewController {
       if (Array.isArray(parsed.pano)) {
         this.panoSpots = parsed.pano;
       }
-    } catch (_) {}
+      this.render();
+    }).catch(() => {});
   }
 
   /**
-   * Persists active hotspot coordinate configuration in localStorage.
+   * Persists active hotspot coordinate configuration in localStorage and server storage.
    */
   saveCustomCoords() {
-    localStorage.setItem("rt_museum_hotspot_coords", JSON.stringify({
+    const data = {
       scenes: this.photoScenes.map((s) => ({ id: s.id, spots: s.spots })),
       pano: this.panoSpots
-    }));
+    };
+    try {
+      localStorage.setItem("rt_museum_hotspot_coords", JSON.stringify(data));
+    } catch (_) {}
+
+    // Отправляем на сервер для сохранения в постоянный файл на диске
+    fetch("/api/save-coords", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    }).then((res) => {
+      if (res.ok) console.log("Координаты сохранены на сервере");
+    }).catch(() => {});
   }
 
   /**
@@ -192,18 +222,25 @@ export class HallViewController {
   }
 
   /**
-   * Exports active hotspot coordinates to system clipboard in JSON format.
+   * Exports active hotspot coordinates to clipboard or interactive prompt.
    */
   copyCoordsJson() {
     const data = {
       scenes: this.photoScenes.map((s) => ({ id: s.id, spots: s.spots })),
       pano: this.panoSpots
     };
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
-      alert("Координаты скопированы в буфер обмена");
-    }).catch(() => {
-      prompt("Скопируйте координаты:", JSON.stringify(data));
-    });
+    const jsonStr = JSON.stringify(data, null, 2);
+
+    // Безопасная попытка копирования с поддержкой обычного HTTP
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        alert("Координаты скопированы в буфер обмена!");
+      }).catch(() => {
+        prompt("Скопируйте координаты (Ctrl+C / Cmd+C):", jsonStr);
+      });
+    } else {
+      prompt("Скопируйте координаты (Ctrl+C / Cmd+C):", jsonStr);
+    }
   }
 
   /**
